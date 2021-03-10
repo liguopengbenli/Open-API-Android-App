@@ -7,7 +7,6 @@ class AuthViewModel constructor(
     val authRepository: AuthRepository
 
 ) : ViewModel()
-
 {
 
 
