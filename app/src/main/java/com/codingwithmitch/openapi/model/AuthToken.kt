@@ -8,7 +8,6 @@ import androidx.room.PrimaryKey
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName
 
-
 @Entity(
     tableName = "auth_token",
     foreignKeys = [
@@ -19,7 +18,6 @@ import com.google.gson.annotations.SerializedName
             onDelete = CASCADE // if row deleted all of it will be deleted
     )]
 )
-
 
 data class AuthToken (
     @PrimaryKey
