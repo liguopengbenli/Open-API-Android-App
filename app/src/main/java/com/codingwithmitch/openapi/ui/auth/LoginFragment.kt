@@ -8,7 +8,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import com.codingwithmitch.openapi.R
+import com.codingwithmitch.openapi.ui.auth.state.LoginFields
 import com.codingwithmitch.openapi.util.GenericApiResponse
+import kotlinx.android.synthetic.main.fragment_login.*
 
 
 class LoginFragment : BaseAuthFragment() {
@@ -26,23 +28,32 @@ class LoginFragment : BaseAuthFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         Log.d(TAG, "LoginFragment: ${viewModel.hashCode()}")
+        subscribeObservers()
+    }
 
-        viewModel.testLogin().observe(viewLifecycleOwner, Observer {
-            response  ->
+    fun subscribeObservers(){
+        viewModel.viewState.observe(viewLifecycleOwner, Observer {
+            it.loginFields?.let {
+                it.login_email?.let {
+                    input_email.setText(it)
+                }
+                it.login_password?.let {
+                    input_password.setText(it)
+                }
 
-            when(response){
-                is GenericApiResponse.ApiSuccessResponse ->{
-                    Log.d(TAG, "LOGIN RESPONSE: ${response.body}")
-                }
-                is GenericApiResponse.ApiErrorResponse ->{
-                    Log.d(TAG, "LOGIN RESPONSE: ${response.errorMessage}")
-                }
-                is GenericApiResponse.ApiEmptyResponse ->{
-                    Log.d(TAG, "LOGIN RESPONSE: Empty Response")
-                }
             }
-
         })
     }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        viewModel.setLoginField(
+            LoginFields(
+                input_email.text.toString(),
+                input_password.text.toString()
+            )
+        )
+    }
+
 
 }
