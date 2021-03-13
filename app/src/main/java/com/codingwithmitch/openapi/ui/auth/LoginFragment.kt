@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import com.codingwithmitch.openapi.R
+import com.codingwithmitch.openapi.model.AuthToken
 import com.codingwithmitch.openapi.ui.auth.state.LoginFields
 import com.codingwithmitch.openapi.util.GenericApiResponse
 import kotlinx.android.synthetic.main.fragment_login.*
@@ -29,9 +30,13 @@ class LoginFragment : BaseAuthFragment() {
         super.onViewCreated(view, savedInstanceState)
         Log.d(TAG, "LoginFragment: ${viewModel.hashCode()}")
         subscribeObservers()
+
+        login_button.setOnClickListener{
+          
+        }
     }
 
-    fun subscribeObservers(){
+    private fun subscribeObservers(){
         viewModel.viewState.observe(viewLifecycleOwner, Observer {
             it.loginFields?.let {
                 it.login_email?.let {
