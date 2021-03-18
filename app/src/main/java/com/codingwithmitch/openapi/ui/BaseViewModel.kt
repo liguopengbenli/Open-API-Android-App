@@ -13,7 +13,7 @@ abstract class BaseViewModel<StateEvent, ViewState>: ViewModel(){
     protected val _viewState: MutableLiveData<ViewState> = MutableLiveData()
     val viewState: LiveData<ViewState> get() = _viewState
 
-
+    // switch map when the stateEvent change we update dataState
     val dataState: LiveData<DataState<ViewState>> = Transformations
         .switchMap(_stateEvent){stateEvent ->
             stateEvent?.let {

@@ -16,7 +16,9 @@ class MainActivity: BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        tool_bar.setOnClickListener {
+            sessionManager.logout()
+        }
         Log.d(TAG, "MainActivity: ")
 
         subscribeObervers()
