@@ -77,6 +77,15 @@ constructor(
         _viewState.value = update
     }
 
+    fun cancelActiveJobs(){
+        authRepository.cancelActiveJob()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        cancelActiveJobs()
+    }
+
 
     override fun initNewViewState(): AuthViewState {
         return AuthViewState()
