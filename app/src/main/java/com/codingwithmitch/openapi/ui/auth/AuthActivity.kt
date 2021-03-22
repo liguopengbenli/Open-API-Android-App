@@ -3,6 +3,7 @@ package com.codingwithmitch.openapi.ui.auth
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -14,6 +15,7 @@ import com.codingwithmitch.openapi.ui.BaseActivity
 import com.codingwithmitch.openapi.ui.ResponseType
 import com.codingwithmitch.openapi.ui.main.MainActivity
 import com.codingwithmitch.openapi.viewmodels.ViewModelProviderFactory
+import kotlinx.android.synthetic.main.activity_auth.*
 import javax.inject.Inject
 
 class AuthActivity : BaseActivity(), NavController.OnDestinationChangedListener
@@ -36,8 +38,8 @@ class AuthActivity : BaseActivity(), NavController.OnDestinationChangedListener
 
     fun subscribeObservers(){
 
-        viewModel.dataState.observe(this, Observer {
-            dataState->
+        viewModel.dataState.observe(this, Observer { dataState->
+            onDataStateChange(dataState)
             dataState.data?.let {
                 data ->
                 data.data?.let {
@@ -46,23 +48,6 @@ class AuthActivity : BaseActivity(), NavController.OnDestinationChangedListener
                         it.authToken?.let {
                             Log.d(TAG, "AuthActivity, DataState: ${it}")
                             viewModel.setAuthToken(it)
-                        }
-                    }
-                }
-
-                data.response?.let {
-                    event ->
-                    event.getContentIfNotHandled()?.let {
-                        when(it.responseType){
-                            is ResponseType.Dialog ->{
-                                //inflate error dialog
-                            }
-                            is ResponseType.Toast ->{
-
-                            }
-                            is ResponseType.None ->{
-                                    Log.e(TAG, "AuthActivity, Response: ${it.message}")
-                            }
                         }
                     }
                 }
@@ -98,4 +83,14 @@ class AuthActivity : BaseActivity(), NavController.OnDestinationChangedListener
     ) {
         viewModel.cancelActiveJobs()
     }
+
+
+    override fun displayProgressBar(bool: Boolean) {
+        if(bool){
+            progress_bar.visibility = View.VISIBLE
+        }else{
+            progress_bar.visibility = View.GONE
+        }
+    }
+
 }
