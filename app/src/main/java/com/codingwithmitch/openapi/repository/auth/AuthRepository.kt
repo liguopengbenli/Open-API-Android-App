@@ -1,5 +1,6 @@
 package com.codingwithmitch.openapi.repository.auth
 
+import android.content.SharedPreferences
 import android.util.Log
 import android.webkit.WebViewClient.ERROR_UNKNOWN
 import androidx.lifecycle.LiveData
@@ -7,6 +8,7 @@ import androidx.lifecycle.switchMap
 import com.codingwithmitch.openapi.auth.OpenApiAuthService
 import com.codingwithmitch.openapi.auth.network_responses.LoginResponse
 import com.codingwithmitch.openapi.auth.network_responses.RegistrationResponse
+import com.codingwithmitch.openapi.model.AccountProperties
 import com.codingwithmitch.openapi.model.AuthToken
 import com.codingwithmitch.openapi.persistence.AccountPropertiesDao
 import com.codingwithmitch.openapi.persistence.AuthTokenDao
@@ -15,20 +17,27 @@ import com.codingwithmitch.openapi.session.SessionManager
 import com.codingwithmitch.openapi.ui.DataState
 import com.codingwithmitch.openapi.ui.Response
 import com.codingwithmitch.openapi.ui.ResponseType
+import com.codingwithmitch.openapi.ui.auth.AuthViewModel
 import com.codingwithmitch.openapi.ui.auth.state.AuthViewState
 import com.codingwithmitch.openapi.ui.auth.state.LoginFields
 import com.codingwithmitch.openapi.ui.auth.state.RegistrationFields
+import com.codingwithmitch.openapi.util.AbsentLiveData
 import com.codingwithmitch.openapi.util.ErrorHandling
+import com.codingwithmitch.openapi.util.ErrorHandling.Companion.ERROR_SAVE_AUTH_TOKEN
 import com.codingwithmitch.openapi.util.ErrorHandling.Companion.GENERIC_AUTH_ERROR
 import com.codingwithmitch.openapi.util.GenericApiResponse
 import com.codingwithmitch.openapi.util.GenericApiResponse.*
+import com.codingwithmitch.openapi.util.PreferenceKeys
+import com.codingwithmitch.openapi.util.SuccessHandling.Companion.RESPONSE_CHECK_PREVIOUS_AUTH_USER_DONE
 import kotlinx.coroutines.Job
 
 class AuthRepository constructor(
     val authTokenDao: AuthTokenDao,
     val accountPropertiesDao: AccountPropertiesDao,
     val openApiAuthService: OpenApiAuthService,
-    val sessionManager: SessionManager
+    val sessionManager: SessionManager,
+    val sharedPreferences: SharedPreferences,
+    val sharePrefsEditor: SharedPreferences.Editor
 ) {
         private val TAG: String = "AppDebug"
         private var repositoryJob: Job? = null
@@ -40,7 +49,8 @@ class AuthRepository constructor(
             return returnErrorResponse(loginFieldErrors, ResponseType.Dialog())
         }
         return object: NetworkBoundResource<LoginResponse, AuthViewState>(
-            sessionManager.isConnectedToTheInternet()
+            sessionManager.isConnectedToTheInternet(),
+            true
         ){
             override suspend fun handleApiSuccessResponse(response: ApiSuccessResponse<LoginResponse>) {
                 Log.d(TAG, "handleApiSuccessResponse: ${response} ")
@@ -49,6 +59,32 @@ class AuthRepository constructor(
                 {
                     return onErrorReturn(response.body.errorMessage, true, false)
                 }
+                accountPropertiesDao.insertOrIgnore(
+                    AccountProperties(
+                        response.body.pk,
+                        response.body.email,
+                        ""
+                    )
+                )
+                // will return -1 if failure
+                val result = authTokenDao.insert(
+                    AuthToken(
+                        response.body.pk,
+                        response.body.token
+                    )
+                )
+
+                if(result<0){
+                    return onCompleteJob(
+                        DataState.error(
+                            Response(ERROR_SAVE_AUTH_TOKEN, ResponseType.Dialog())
+                        )
+                    )
+                }
+
+                saveAuthenticatedUserToPrefs(email)
+
+
                 onCompleteJob(
                     DataState.data(
                         data = AuthViewState(
@@ -56,7 +92,6 @@ class AuthRepository constructor(
                         )
                     )
                 )
-
             }
 
             override fun createCall(): LiveData<GenericApiResponse<LoginResponse>> {
@@ -68,7 +103,88 @@ class AuthRepository constructor(
                 repositoryJob = job
             }
 
+            override suspend fun createCacheRequestAndReturn() {
+                //not used
+            }
+
         }.asLiveData()
+    }
+
+    fun checkPreviousAuthUser(): LiveData<DataState<AuthViewState>>{
+        val previousAuthUserEmail: String? = sharedPreferences.getString(PreferenceKeys.PREVIOUS_AUTH_USER, null)
+        if(previousAuthUserEmail.isNullOrBlank()){
+            Log.e(TAG, "checkPreviousAuthUser: No previous user found")
+            return returnNoTokenFound()
+        }
+        return object: NetworkBoundResource<Void, AuthViewState>(
+            sessionManager.isConnectedToTheInternet(),
+            false
+        ){
+            override suspend fun createCacheRequestAndReturn() {
+                accountPropertiesDao.searchByEmail(previousAuthUserEmail).let {
+                    accountProperties ->
+                    Log.d(TAG, "checkPreviousAuthUser searching for token: $accountProperties")
+                    accountProperties?.let {
+                        if(accountProperties.pk > -1){
+                            authTokenDao.searchByPk(accountProperties.pk).let {
+                                authToken ->
+                                if(authToken !=null){
+                                    onCompleteJob(
+                                        DataState.data(
+                                            data = AuthViewState(
+                                                authToken = authToken
+                                            )
+                                        )
+                                    )
+                                    return
+                                }
+                            }
+                        }
+                    }
+                    Log.d(TAG, "checkPreviousAuthUser: AuthToken not found...")
+                    onCompleteJob(
+                        DataState.data(
+                            null,
+                            response = Response(
+                                RESPONSE_CHECK_PREVIOUS_AUTH_USER_DONE,
+                                ResponseType.None()
+                            )
+                        )
+                    )
+                }
+            }
+            // not used
+            override suspend fun handleApiSuccessResponse(response: ApiSuccessResponse<Void>) {
+            }
+
+            // not used
+            override fun createCall(): LiveData<GenericApiResponse<Void>> {
+                return  AbsentLiveData.create()
+            }
+
+            override fun setJob(job: Job) {
+                repositoryJob?.cancel()
+                repositoryJob = job
+            }
+
+        }.asLiveData()
+    }
+
+    private fun returnNoTokenFound(): LiveData<DataState<AuthViewState>> {
+        return object: LiveData<DataState<AuthViewState>>(){
+            override fun onActive() {
+                super.onActive()
+                value = DataState.data(
+                    null,
+                    Response(RESPONSE_CHECK_PREVIOUS_AUTH_USER_DONE, ResponseType.None())
+                )
+            }
+        }
+    }
+
+    private fun saveAuthenticatedUserToPrefs(email: String) {
+        sharePrefsEditor.putString(PreferenceKeys.PREVIOUS_AUTH_USER, email)
+        sharePrefsEditor.apply()
     }
 
     private fun returnErrorResponse(errorMessage: String, responseType: ResponseType): LiveData<DataState<AuthViewState>> {
@@ -103,7 +219,8 @@ class AuthRepository constructor(
         }
 
         return object: NetworkBoundResource<RegistrationResponse, AuthViewState>(
-            sessionManager.isConnectedToTheInternet()
+            sessionManager.isConnectedToTheInternet(),
+            true
         ){
             override suspend fun handleApiSuccessResponse(response: ApiSuccessResponse<RegistrationResponse>) {
 
@@ -112,6 +229,32 @@ class AuthRepository constructor(
                 if(response.body.response.equals(GENERIC_AUTH_ERROR)){
                     return onErrorReturn(response.body.errorMessage, true, false)
                 }
+
+                // will return -1 if failure
+                val result = authTokenDao.insert(
+                    AuthToken(
+                        response.body.pk,
+                        response.body.token
+                    )
+                )
+
+                if(result<0){
+                    return onCompleteJob(
+                        DataState.error(
+                            Response(ERROR_SAVE_AUTH_TOKEN, ResponseType.Dialog())
+                        )
+                    )
+                }
+
+                saveAuthenticatedUserToPrefs(email)
+
+                onCompleteJob(
+                    DataState.data(
+                        data = AuthViewState(
+                            authToken = AuthToken(response.body.pk, response.body.token)
+                        )
+                    )
+                )
 
                 onCompleteJob(
                     DataState.data(
@@ -129,6 +272,10 @@ class AuthRepository constructor(
             override fun setJob(job: Job) {
                 repositoryJob?.cancel()
                 repositoryJob = job
+            }
+
+            override suspend fun createCacheRequestAndReturn() {
+                // not used in thus case
             }
 
         }.asLiveData()

@@ -7,6 +7,7 @@ import com.codingwithmitch.openapi.ui.DataState
 import com.codingwithmitch.openapi.ui.Response
 import com.codingwithmitch.openapi.ui.ResponseType
 import com.codingwithmitch.openapi.util.Constants.Companion.NETWORK_TIMEOUT
+import com.codingwithmitch.openapi.util.Constants.Companion.TESTING_CACHE_DELAY
 import com.codingwithmitch.openapi.util.Constants.Companion.TESTING_NETWORK_DELAY
 import com.codingwithmitch.openapi.util.ErrorHandling
 import com.codingwithmitch.openapi.util.ErrorHandling.Companion.ERROR_CHECK_NETWORK_CONNECTION
@@ -21,11 +22,10 @@ import kotlinx.coroutines.Dispatchers.Main
 
 abstract class NetworkBoundResource<ResponseObject, ViewStateType>
     (
-    isNetworkAvailable: Boolean
-
+    isNetworkAvailable: Boolean,
+    isNetworkRequest: Boolean
 ){
     private val TAG: String = "AppDebug"
-
     protected val result = MediatorLiveData<DataState<ViewStateType>>()
     protected lateinit var job: CompletableJob
     protected lateinit var coroutineScope: CoroutineScope
@@ -33,36 +33,49 @@ abstract class NetworkBoundResource<ResponseObject, ViewStateType>
     init {
         setJob(initNewJob())
         setValue(DataState.loading(isLoading = true, catchData = null))
+        if(isNetworkRequest){
+            if(isNetworkAvailable){
+                coroutineScope.launch {
+                    delay(TESTING_NETWORK_DELAY)
+                    withContext(Main){
+                        // make network call in main thread to use mediator livedata
+                        val apiResponse = createCall()
+                        result.addSource(apiResponse){
+                                response->
+                            result.removeSource(apiResponse)
 
-        if(isNetworkAvailable){
-            coroutineScope.launch {
-                delay(TESTING_NETWORK_DELAY)
-                withContext(Main){
-                    // make network call in main thread to use mediator livedata
-                    val apiResponse = createCall()
-                    result.addSource(apiResponse){
-                        response->
-                        result.removeSource(apiResponse)
-
-                        coroutineScope.launch {
-                            // back to background thread
-                            handleNetworkCall(response)
+                            coroutineScope.launch {
+                                // back to background thread
+                                handleNetworkCall(response)
+                            }
                         }
                     }
                 }
-            }
 
-            GlobalScope.launch(IO){
-                delay(NETWORK_TIMEOUT)
-                if(!job.isCompleted){
-                    Log.e(TAG, "NetworkBoundResource: JOB  NETWORK TIMEMOUT.")
-                    job.cancel(CancellationException(UNABLE_TO_RESOLVE_HOST))
+                GlobalScope.launch(IO){
+                    delay(NETWORK_TIMEOUT)
+                    if(!job.isCompleted){
+                        Log.e(TAG, "NetworkBoundResource: JOB  NETWORK TIMEMOUT.")
+                        job.cancel(CancellationException(UNABLE_TO_RESOLVE_HOST))
+                    }
+
                 }
-
             }
-        }else{
-            onErrorReturn(UNABLE_TODO_OPERATION_WO_INTERNET, shouldUseDialog = true, shouldUseToast = false)
+            else{
+                onErrorReturn(UNABLE_TODO_OPERATION_WO_INTERNET, shouldUseDialog = true, shouldUseToast = false)
+            }
         }
+        else{
+            coroutineScope.launch {
+                // fake delay for testing cache
+                delay(TESTING_CACHE_DELAY)
+
+                //View data from cache only and return
+                createCacheRequestAndReturn()
+            }
+        }
+
+
     }
 
     suspend fun handleNetworkCall(response: GenericApiResponse<ResponseObject>?) {
@@ -150,6 +163,8 @@ abstract class NetworkBoundResource<ResponseObject, ViewStateType>
 
 
     fun asLiveData() = result as LiveData<DataState<ViewStateType>>
+
+    abstract suspend fun createCacheRequestAndReturn()
 
     abstract suspend fun handleApiSuccessResponse(response: ApiSuccessResponse<ResponseObject>)
 
