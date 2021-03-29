@@ -19,6 +19,7 @@ import com.codingwithmitch.openapi.ui.main.blog.UpdateBlogFragment
 import com.codingwithmitch.openapi.ui.main.blog.ViewBlogFragment
 import com.codingwithmitch.openapi.util.BottomNavController
 import com.codingwithmitch.openapi.util.setUpNavigation
+import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.android.synthetic.main.activity_auth.*
 import kotlinx.android.synthetic.main.activity_main.*
@@ -58,7 +59,7 @@ class MainActivity: BaseActivity(),
     }
 
     override fun onGraphChange() {
-
+        expandAppbar()
     }
 
 
@@ -139,6 +140,8 @@ class MainActivity: BaseActivity(),
         }
     }
 
-
+    override fun expandAppbar() {
+        findViewById<AppBarLayout>(R.id.app_bar).setExpanded(true)
+    }
 
 }
