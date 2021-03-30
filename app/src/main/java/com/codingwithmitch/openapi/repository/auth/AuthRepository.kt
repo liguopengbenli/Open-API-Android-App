@@ -48,9 +48,10 @@ class AuthRepository constructor(
         if(!loginFieldErrors.equals(LoginFields.LoginError.none())){
             return returnErrorResponse(loginFieldErrors, ResponseType.Dialog())
         }
-        return object: NetworkBoundResource<LoginResponse, AuthViewState>(
+        return object: NetworkBoundResource<LoginResponse, Any, AuthViewState>(
             sessionManager.isConnectedToTheInternet(),
-            true
+            true,
+            false
         ){
             override suspend fun handleApiSuccessResponse(response: ApiSuccessResponse<LoginResponse>) {
                 Log.d(TAG, "handleApiSuccessResponse: ${response} ")
@@ -107,6 +108,15 @@ class AuthRepository constructor(
                 //not used
             }
 
+            override fun loadFromCache(): LiveData<AuthViewState> {
+                // not used
+                return AbsentLiveData.create()
+            }
+
+            override suspend fun updateLocalDb(cacheObject: Any?) {
+                // not used
+            }
+
         }.asLiveData()
     }
 
@@ -116,8 +126,9 @@ class AuthRepository constructor(
             Log.e(TAG, "checkPreviousAuthUser: No previous user found")
             return returnNoTokenFound()
         }
-        return object: NetworkBoundResource<Void, AuthViewState>(
+        return object: NetworkBoundResource<Void, Any, AuthViewState>(
             sessionManager.isConnectedToTheInternet(),
+            false,
             false
         ){
             override suspend fun createCacheRequestAndReturn() {
@@ -165,6 +176,14 @@ class AuthRepository constructor(
             override fun setJob(job: Job) {
                 repositoryJob?.cancel()
                 repositoryJob = job
+            }
+
+            override fun loadFromCache(): LiveData<AuthViewState> {
+                return AbsentLiveData.create()
+            }
+
+            override suspend fun updateLocalDb(cacheObject: Any?) {
+                // not used
             }
 
         }.asLiveData()
@@ -218,9 +237,10 @@ class AuthRepository constructor(
             return returnErrorResponse(registrationFieldErrors, ResponseType.Dialog())
         }
 
-        return object: NetworkBoundResource<RegistrationResponse, AuthViewState>(
+        return object: NetworkBoundResource<RegistrationResponse, Any, AuthViewState>(
             sessionManager.isConnectedToTheInternet(),
-            true
+            true,
+            false
         ){
             override suspend fun handleApiSuccessResponse(response: ApiSuccessResponse<RegistrationResponse>) {
 
@@ -276,6 +296,14 @@ class AuthRepository constructor(
 
             override suspend fun createCacheRequestAndReturn() {
                 // not used in thus case
+            }
+
+            override fun loadFromCache(): LiveData<AuthViewState> {
+                return AbsentLiveData.create()
+            }
+
+            override suspend fun updateLocalDb(cacheObject: Any?) {
+                // not used
             }
 
         }.asLiveData()

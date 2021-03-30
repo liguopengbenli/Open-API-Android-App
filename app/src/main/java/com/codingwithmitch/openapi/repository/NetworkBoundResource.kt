@@ -20,10 +20,11 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 
-abstract class NetworkBoundResource<ResponseObject, ViewStateType>
+abstract class NetworkBoundResource<ResponseObject, CacheObject, ViewStateType>
     (
     isNetworkAvailable: Boolean,
-    isNetworkRequest: Boolean
+    isNetworkRequest: Boolean,
+    shouldloadFromCache: Boolean
 ){
     private val TAG: String = "AppDebug"
     protected val result = MediatorLiveData<DataState<ViewStateType>>()
@@ -33,6 +34,14 @@ abstract class NetworkBoundResource<ResponseObject, ViewStateType>
     init {
         setJob(initNewJob())
         setValue(DataState.loading(isLoading = true, catchData = null))
+        if(shouldloadFromCache){
+            val dbSource = loadFromCache()
+            result.addSource(dbSource){
+                result.removeSource(dbSource)
+                setValue(DataState.loading(true, it))
+            }
+        }
+
         if(isNetworkRequest){
             if(isNetworkAvailable){
                 coroutineScope.launch {
@@ -133,8 +142,6 @@ abstract class NetworkBoundResource<ResponseObject, ViewStateType>
                 )
             )
         )
-
-
     }
 
 
@@ -169,6 +176,10 @@ abstract class NetworkBoundResource<ResponseObject, ViewStateType>
     abstract suspend fun handleApiSuccessResponse(response: ApiSuccessResponse<ResponseObject>)
 
     abstract fun createCall(): LiveData<GenericApiResponse<ResponseObject>>
+
+    abstract fun loadFromCache(): LiveData<ViewStateType>
+
+    abstract suspend fun updateLocalDb(cacheObject: CacheObject?)
 
     abstract fun setJob(job: Job)
 

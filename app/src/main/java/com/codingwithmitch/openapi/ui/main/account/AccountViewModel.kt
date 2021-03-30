@@ -22,7 +22,10 @@ constructor(
     override fun handleStateEvent(stateEvent: AccountStateEvent): LiveData<DataState<AccountViewState>> {
         when(stateEvent){
             is GetAccountPropertiesEvent ->{
-                return AbsentLiveData.create()
+                return sessionManager.cachedToken.value?.let {
+                    authToken ->
+                    accountRepository.getAccountProperties(authToken)
+                }?: AbsentLiveData.create()
             }
             is UpdateAccountPropertiesEvent ->{
                 return AbsentLiveData.create()
