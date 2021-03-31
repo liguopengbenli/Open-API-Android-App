@@ -1,19 +1,18 @@
 package com.codingwithmitch.openapi.di.main
 
-import com.codingwithmitch.openapi.auth.main.OpenApiMainService
+import com.codingwithmitch.openapi.api.main.OpenApiMainService
 import com.codingwithmitch.openapi.persistence.AccountPropertiesDao
 import com.codingwithmitch.openapi.repository.main.AccountRepository
 import com.codingwithmitch.openapi.session.SessionManager
 import dagger.Module
 import dagger.Provides
 import retrofit2.Retrofit
-import retrofit2.create
 
 @Module
 class MainModule {
     @MainScope
     @Provides
-    fun providesOpenApiMainService(retrofitBuilder: Retrofit.Builder): OpenApiMainService{
+    fun providesOpenApiMainService(retrofitBuilder: Retrofit.Builder): OpenApiMainService {
         return retrofitBuilder
             .build()
             .create(OpenApiMainService::class.java)
@@ -21,7 +20,7 @@ class MainModule {
 
     @MainScope
     @Provides
-    fun provideMainRepository(
+    fun provideAccountRepository(
         openApiMainService: OpenApiMainService,
         accountPropertiesDao: AccountPropertiesDao,
         sessionManager: SessionManager

@@ -1,9 +1,9 @@
-package com.codingwithmitch.openapi.auth
+package com.codingwithmitch.openapi.api.auth
 
 import androidx.lifecycle.LiveData
 import com.codingwithmitch.openapi.GenericResponse
-import com.codingwithmitch.openapi.auth.network_responses.LoginResponse
-import com.codingwithmitch.openapi.auth.network_responses.RegistrationResponse
+import com.codingwithmitch.openapi.api.auth.network_responses.LoginResponse
+import com.codingwithmitch.openapi.api.auth.network_responses.RegistrationResponse
 import com.codingwithmitch.openapi.util.GenericApiResponse
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded

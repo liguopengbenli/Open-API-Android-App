@@ -5,9 +5,9 @@ import android.util.Log
 import android.webkit.WebViewClient.ERROR_UNKNOWN
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.switchMap
-import com.codingwithmitch.openapi.auth.OpenApiAuthService
-import com.codingwithmitch.openapi.auth.network_responses.LoginResponse
-import com.codingwithmitch.openapi.auth.network_responses.RegistrationResponse
+import com.codingwithmitch.openapi.api.auth.OpenApiAuthService
+import com.codingwithmitch.openapi.api.auth.network_responses.LoginResponse
+import com.codingwithmitch.openapi.api.auth.network_responses.RegistrationResponse
 import com.codingwithmitch.openapi.model.AccountProperties
 import com.codingwithmitch.openapi.model.AuthToken
 import com.codingwithmitch.openapi.persistence.AccountPropertiesDao
@@ -50,6 +50,7 @@ class AuthRepository constructor(
         }
         return object: NetworkBoundResource<LoginResponse, Any, AuthViewState>(
             sessionManager.isConnectedToTheInternet(),
+            true,
             true,
             false
         ){
@@ -128,6 +129,7 @@ class AuthRepository constructor(
         }
         return object: NetworkBoundResource<Void, Any, AuthViewState>(
             sessionManager.isConnectedToTheInternet(),
+            false,
             false,
             false
         ){
@@ -239,6 +241,7 @@ class AuthRepository constructor(
 
         return object: NetworkBoundResource<RegistrationResponse, Any, AuthViewState>(
             sessionManager.isConnectedToTheInternet(),
+            true,
             true,
             false
         ){

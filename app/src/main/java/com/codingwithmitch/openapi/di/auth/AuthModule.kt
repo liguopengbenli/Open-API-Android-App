@@ -1,7 +1,7 @@
 package com.codingwithmitch.openapi.di.auth
 
 import android.content.SharedPreferences
-import com.codingwithmitch.openapi.auth.OpenApiAuthService
+import com.codingwithmitch.openapi.api.auth.OpenApiAuthService
 import com.codingwithmitch.openapi.persistence.AccountPropertiesDao
 import com.codingwithmitch.openapi.persistence.AuthTokenDao
 import com.codingwithmitch.openapi.repository.auth.AuthRepository

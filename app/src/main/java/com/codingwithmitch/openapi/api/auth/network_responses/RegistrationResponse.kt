@@ -1,4 +1,4 @@
-package com.codingwithmitch.openapi.auth.network_responses
+package com.codingwithmitch.openapi.api.auth.network_responses
 
 import com.google.gson.annotations.Expose
 import com.google.gson.annotations.SerializedName

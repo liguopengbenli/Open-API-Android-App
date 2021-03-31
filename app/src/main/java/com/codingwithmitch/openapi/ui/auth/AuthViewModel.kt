@@ -2,8 +2,8 @@ package com.codingwithmitch.openapi.ui.auth
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import com.codingwithmitch.openapi.auth.network_responses.LoginResponse
-import com.codingwithmitch.openapi.auth.network_responses.RegistrationResponse
+import com.codingwithmitch.openapi.api.auth.network_responses.LoginResponse
+import com.codingwithmitch.openapi.api.auth.network_responses.RegistrationResponse
 import com.codingwithmitch.openapi.model.AuthToken
 import com.codingwithmitch.openapi.repository.auth.AuthRepository
 import com.codingwithmitch.openapi.ui.BaseViewModel
