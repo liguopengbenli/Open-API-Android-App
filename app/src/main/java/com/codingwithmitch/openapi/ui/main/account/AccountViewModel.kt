@@ -6,6 +6,7 @@ import com.codingwithmitch.openapi.repository.main.AccountRepository
 import com.codingwithmitch.openapi.session.SessionManager
 import com.codingwithmitch.openapi.ui.BaseViewModel
 import com.codingwithmitch.openapi.ui.DataState
+import com.codingwithmitch.openapi.ui.StateError
 import com.codingwithmitch.openapi.ui.main.account.state.AccountStateEvent
 import com.codingwithmitch.openapi.ui.main.account.state.AccountStateEvent.*
 import com.codingwithmitch.openapi.ui.main.account.state.AccountViewState
@@ -44,7 +45,14 @@ constructor(
             }
 
             is ChangePasswordEvent ->{
-                return AbsentLiveData.create()
+                return sessionManager.cachedToken.value?.let { authToken ->
+                    accountRepository.updatePassword(
+                            authToken,
+                            stateEvent.currentPassword,
+                            stateEvent.newPassword,
+                            stateEvent.confirmNewPassword
+                    )
+                }?: AbsentLiveData.create()
             }
             is None ->{
                 return AbsentLiveData.create()
