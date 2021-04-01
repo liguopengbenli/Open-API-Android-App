@@ -65,6 +65,8 @@ abstract class NetworkBoundResource<ResponseObject, CacheObject, ViewStateType>
     }
 
     private fun doCacheRequest() {
+        //Log.e(TAG, "doCacheRequest: lig")
+
         coroutineScope.launch {
             // fake delay for testing cache
             delay(TESTING_CACHE_DELAY)
