@@ -12,6 +12,7 @@ import com.codingwithmitch.openapi.model.AccountProperties
 import com.codingwithmitch.openapi.model.AuthToken
 import com.codingwithmitch.openapi.persistence.AccountPropertiesDao
 import com.codingwithmitch.openapi.persistence.AuthTokenDao
+import com.codingwithmitch.openapi.repository.JobManager
 import com.codingwithmitch.openapi.repository.NetworkBoundResource
 import com.codingwithmitch.openapi.session.SessionManager
 import com.codingwithmitch.openapi.ui.DataState
@@ -38,9 +39,10 @@ class AuthRepository constructor(
     val sessionManager: SessionManager,
     val sharedPreferences: SharedPreferences,
     val sharePrefsEditor: SharedPreferences.Editor
-) {
+): JobManager("AuthRepository")
+
+{
         private val TAG: String = "AppDebug"
-        private var repositoryJob: Job? = null
 
 
     fun attemptLogin(email: String, password: String): LiveData<DataState<AuthViewState>>{
@@ -101,8 +103,7 @@ class AuthRepository constructor(
             }
 
             override fun setJob(job: Job) {
-                repositoryJob?.cancel()
-                repositoryJob = job
+                addJob("attemptLogin", job)
             }
 
             override suspend fun createCacheRequestAndReturn() {
@@ -176,8 +177,7 @@ class AuthRepository constructor(
             }
 
             override fun setJob(job: Job) {
-                repositoryJob?.cancel()
-                repositoryJob = job
+                addJob("checkPreviousAuthUser", job)
             }
 
             override fun loadFromCache(): LiveData<AuthViewState> {
@@ -220,10 +220,6 @@ class AuthRepository constructor(
             }
     }
 
-    fun cancelActiveJob(){
-        Log.d(TAG, "AuthRepository: Cancelling on going jobs...")
-        repositoryJob?.cancel()
-    }
 
 
     fun attemptRegistration(
@@ -293,8 +289,7 @@ class AuthRepository constructor(
             }
 
             override fun setJob(job: Job) {
-                repositoryJob?.cancel()
-                repositoryJob = job
+                addJob("attemptRegistration", job)
             }
 
             override suspend fun createCacheRequestAndReturn() {

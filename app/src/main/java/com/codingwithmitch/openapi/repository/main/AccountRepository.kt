@@ -8,6 +8,7 @@ import com.codingwithmitch.openapi.api.main.OpenApiMainService
 import com.codingwithmitch.openapi.model.AccountProperties
 import com.codingwithmitch.openapi.model.AuthToken
 import com.codingwithmitch.openapi.persistence.AccountPropertiesDao
+import com.codingwithmitch.openapi.repository.JobManager
 import com.codingwithmitch.openapi.repository.NetworkBoundResource
 import com.codingwithmitch.openapi.session.SessionManager
 import com.codingwithmitch.openapi.ui.DataState
@@ -27,12 +28,10 @@ class AccountRepository
         val openApiMainService: OpenApiMainService,
         val accountPropertiesDao: AccountPropertiesDao,
         val sessionManager: SessionManager
-    )
+    ): JobManager("AccountRepository")
 
 {
     private val TAG: String = "AppDebug"
-
-    private var repositoryJOb: Job? = null
 
     fun getAccountProperties(authToken: AuthToken): LiveData<DataState<AccountViewState>>{
         return object: NetworkBoundResource<AccountProperties, AccountProperties , AccountViewState>(
@@ -65,8 +64,7 @@ class AccountRepository
             }
 
             override fun setJob(job: Job) {
-                repositoryJOb?.cancel()
-                repositoryJOb = job
+                addJob("getAccountProperties", job)
             }
 
             override fun loadFromCache(): LiveData<AccountViewState> {
@@ -141,8 +139,7 @@ class AccountRepository
             }
 
             override fun setJob(job: Job) {
-                repositoryJOb?.cancel()
-                repositoryJOb = job
+                addJob("saveAccountProperties", job)
             }
 
         }.asLiveData()
@@ -194,16 +191,11 @@ class AccountRepository
             }
 
             override fun setJob(job: Job) {
-                repositoryJOb?.cancel()
-                repositoryJOb = job
+                addJob("updatePassword", job)
             }
 
         }.asLiveData()
     }
 
-    fun cancelActiveJobs(){
-        Log.d(TAG, "AuthRepository: cancelActiveJobs")
-        repositoryJOb?.cancel()
-    }
 
 }

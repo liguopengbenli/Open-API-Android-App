@@ -13,10 +13,13 @@ import androidx.navigation.NavController
 import com.codingwithmitch.openapi.R
 import com.codingwithmitch.openapi.ui.BaseActivity
 import com.codingwithmitch.openapi.ui.auth.AuthActivity
+import com.codingwithmitch.openapi.ui.main.account.BaseAccountFragment
 import com.codingwithmitch.openapi.ui.main.account.ChangePasswordFragment
 import com.codingwithmitch.openapi.ui.main.account.UpdateAccountFragment
+import com.codingwithmitch.openapi.ui.main.blog.BaseBlogFragment
 import com.codingwithmitch.openapi.ui.main.blog.UpdateBlogFragment
 import com.codingwithmitch.openapi.ui.main.blog.ViewBlogFragment
+import com.codingwithmitch.openapi.ui.main.create_blog.BaseCreateBlogFragment
 import com.codingwithmitch.openapi.util.BottomNavController
 import com.codingwithmitch.openapi.util.setUpNavigation
 import com.google.android.material.appbar.AppBarLayout
@@ -60,6 +63,25 @@ class MainActivity: BaseActivity(),
 
     override fun onGraphChange() {
         expandAppbar()
+        cancelAciveJobs()
+    }
+
+    private fun cancelAciveJobs() {
+        var fragments = bottomNavController.fragmentManager
+            .findFragmentById(bottomNavController.containerId)
+            ?.childFragmentManager
+            ?.fragments
+
+        if(fragments != null){
+            for (fragment in fragments){
+                when (fragment){
+                    is BaseAccountFragment-> fragment.cancelActiveJobs()
+                    is BaseBlogFragment-> fragment.cancelActiveJobs()
+                    is BaseCreateBlogFragment-> fragment.cancelActiveJobs()
+                }
+            }
+        }
+        displayProgressBar(false)
     }
 
 
