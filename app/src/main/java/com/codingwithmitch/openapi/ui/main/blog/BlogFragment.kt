@@ -1,11 +1,14 @@
 package com.codingwithmitch.openapi.ui.main.blog
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.codingwithmitch.openapi.R
+import com.codingwithmitch.openapi.ui.main.blog.state.BlogStateEvent
 import kotlinx.android.synthetic.main.fragment_blog.*
 
 class BlogFragment : BaseBlogFragment() {
@@ -25,6 +28,36 @@ class BlogFragment : BaseBlogFragment() {
         goViewBlogFragment.setOnClickListener {
             findNavController().navigate(R.id.action_blogFragment_to_viewBlogFragment)
         }
+        subscribeObserver()
+        executeSearch()
+    }
+
+    private fun executeSearch(){
+        viewModel.setQuery("")
+        viewModel.setStateEvent(
+            BlogStateEvent.BlogSearchEvent()
+        )
+    }
+
+    private fun subscribeObserver(){
+        viewModel.dataState.observe(viewLifecycleOwner, Observer { dataState->
+            if(dataState != null){
+                stateChangeListener.onDataStateChange(dataState)
+                dataState.data?.let {
+                    it.data?.let { event ->
+                        event.getContentIfNotHandled()?.let {
+                            Log.d(TAG, "BlogFtagment, dataState: $it")
+                            viewModel.setBlogListData(it.blogFields.blogList)
+                        }
+                    }
+                }
+            }
+
+        })
+
+        viewModel.viewState.observe(viewLifecycleOwner, Observer {
+            Log.d(TAG, "BlogFrament, viewState: ${it}")
+        })
     }
 
 }

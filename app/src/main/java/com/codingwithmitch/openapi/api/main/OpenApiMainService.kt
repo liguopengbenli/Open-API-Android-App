@@ -2,6 +2,7 @@ package com.codingwithmitch.openapi.api.main
 
 import androidx.lifecycle.LiveData
 import com.codingwithmitch.openapi.api.GenericResponse
+import com.codingwithmitch.openapi.api.main.response.BlogListSearchResponse
 import com.codingwithmitch.openapi.model.AccountProperties
 import com.codingwithmitch.openapi.util.GenericApiResponse
 import retrofit2.http.*
@@ -29,5 +30,11 @@ interface OpenApiMainService{
         @Field("new_password") newPassword: String,
         @Field("confirm_new_password") confirmPassword: String
     ): LiveData<GenericApiResponse<GenericResponse>>
+
+    @GET("blog/list")
+    fun searchListBlogPosts(
+        @Header("Authorization") authorization: String,
+        @Query("search") query: String
+    ): LiveData<GenericApiResponse<BlogListSearchResponse>>
 
 }
