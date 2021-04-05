@@ -13,6 +13,9 @@ import com.bumptech.glide.RequestManager
 import com.codingwithmitch.openapi.R
 import com.codingwithmitch.openapi.model.BlogPost
 import com.codingwithmitch.openapi.ui.main.blog.state.BlogStateEvent
+import com.codingwithmitch.openapi.ui.main.blog.viewModel.setBlogListData
+import com.codingwithmitch.openapi.ui.main.blog.viewModel.setBlogPost
+import com.codingwithmitch.openapi.ui.main.blog.viewModel.setQuery
 import com.codingwithmitch.openapi.util.TopSpacingItemDecoration
 import kotlinx.android.synthetic.main.fragment_blog.*
 import javax.inject.Inject
@@ -21,9 +24,6 @@ class BlogFragment :
     BaseBlogFragment(),
     BlogListAdapter.Interaction
 {
-
-    @Inject
-    lateinit var requestManager: RequestManager
 
     private lateinit var recyclerAdapter: BlogListAdapter
 
@@ -108,7 +108,8 @@ class BlogFragment :
     }
 
     override fun onItemSelected(position: Int, item: BlogPost) {
-        Log.d(TAG, "onItemSelected: position, BlogPost: $position, $item")
+        viewModel.setBlogPost(item)
+        findNavController().navigate(R.id.action_blogFragment_to_viewBlogFragment)
     }
 
     override fun onDestroyView() {

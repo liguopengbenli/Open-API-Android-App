@@ -1,4 +1,4 @@
-package com.codingwithmitch.openapi.ui.main.blog
+package com.codingwithmitch.openapi.ui.main.blog.viewModel
 
 import android.content.SharedPreferences
 import androidx.lifecycle.LiveData
@@ -33,6 +33,11 @@ constructor(
                     )
                 }?: AbsentLiveData.create()
             }
+
+            is checkAuthorOfBlogPost->{
+                return AbsentLiveData.create()
+            }
+
             is None->{
                 return AbsentLiveData.create()
             }
@@ -41,21 +46,6 @@ constructor(
 
     override fun initNewViewState(): BlogViewState {
         return BlogViewState()
-    }
-
-    fun setQuery(query: String){
-        val update = getCurrentViewStateOrNew()
-        //if(query.equals(update.blogFields.searchQuery)){
-          //  return
-        //}
-        update.blogFields.searchQuery = query
-        _viewState.value = update
-    }
-
-    fun setBlogListData(blogList: List<BlogPost>){
-        val update = getCurrentViewStateOrNew()
-        update.blogFields.blogList = blogList
-        _viewState.value = update
     }
 
     fun cancelActiveJobs(){
