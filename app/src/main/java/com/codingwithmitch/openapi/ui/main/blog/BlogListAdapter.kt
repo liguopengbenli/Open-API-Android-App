@@ -1,5 +1,6 @@
 package com.codingwithmitch.openapi.ui.main.blog
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -71,6 +72,7 @@ class BlogListAdapter(
 
         when(viewType){
             NO_MORE_RESULTS ->{
+                Log.e(TAG, "onCreateViewHolder: No more results...")
                 return GenericViewHolder(
                     LayoutInflater.from(parent.context).inflate(
                         R.layout.layout_no_more_results,
