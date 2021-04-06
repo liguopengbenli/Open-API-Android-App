@@ -12,10 +12,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.RequestManager
 import com.codingwithmitch.openapi.R
 import com.codingwithmitch.openapi.model.BlogPost
+import com.codingwithmitch.openapi.ui.DataState
 import com.codingwithmitch.openapi.ui.main.blog.state.BlogStateEvent
-import com.codingwithmitch.openapi.ui.main.blog.viewModel.setBlogListData
-import com.codingwithmitch.openapi.ui.main.blog.viewModel.setBlogPost
-import com.codingwithmitch.openapi.ui.main.blog.viewModel.setQuery
+import com.codingwithmitch.openapi.ui.main.blog.state.BlogViewState
+import com.codingwithmitch.openapi.ui.main.blog.viewModel.*
+import com.codingwithmitch.openapi.util.ErrorHandling
 import com.codingwithmitch.openapi.util.TopSpacingItemDecoration
 import kotlinx.android.synthetic.main.fragment_blog.*
 import javax.inject.Inject
@@ -37,36 +38,21 @@ class BlogFragment :
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        //goViewBlogFragment.setOnClickListener {
-            //findNavController().navigate(R.id.action_blogFragment_to_viewBlogFragment)
-        //}
         initRecyclerView()
         subscribeObserver()
-        executeSearch()
+        if (savedInstanceState == null){
+            viewModel.loadFirstPage()
+        }
     }
 
-    private fun executeSearch(){
-        viewModel.setQuery("")
-        viewModel.setStateEvent(
-            BlogStateEvent.BlogSearchEvent()
-        )
-    }
+
 
     private fun subscribeObserver(){
         viewModel.dataState.observe(viewLifecycleOwner, Observer { dataState->
             if(dataState != null){
+                handlePagination(dataState)
                 stateChangeListener.onDataStateChange(dataState)
-                dataState.data?.let {
-                    it.data?.let { event ->
-                        event.getContentIfNotHandled()?.let {
-                            Log.d(TAG, "BlogFtagment, dataState: $it")
-                            viewModel.setBlogListData(it.blogFields.blogList)
-                        }
-                    }
-                }
             }
-
         })
 
         viewModel.viewState.observe(viewLifecycleOwner, Observer {viewState->
@@ -74,10 +60,38 @@ class BlogFragment :
             if(viewState != null){
                 recyclerAdapter.submitList(
                     list = viewState.blogFields.blogList,
-                    isQueryExhausted = true
+                    isQueryExhausted = viewState.blogFields.isQueryExhausted
                 )
             }
         })
+    }
+
+    private fun handlePagination(dataState: DataState<BlogViewState>){
+        // Handle incoming data from DataState
+        dataState.data?.let {
+            it.data?.let{
+                it.getContentIfNotHandled()?.let{
+                    viewModel.handleIncomingBlogListData(it)
+                }
+            }
+        }
+
+        // Check for pagination end (no more results)
+        // must do this b/c server will return an ApiErrorResponse if page is not valid,
+        // -> meaning there is no more data.
+        dataState.error?.let{ event ->
+            event.peekContent().response.message?.let{
+                if(ErrorHandling.isPaginationDone(it)){
+
+                    // handle the error message event so it doesn't display in UI
+                    event.getContentIfNotHandled()
+
+                    // set query exhausted to update RecyclerView with
+                    // "No more results..." list item
+                    viewModel.setQueryExhausted(true)
+                }
+            }
+        }
     }
 
     private fun initRecyclerView(){
@@ -99,12 +113,12 @@ class BlogFragment :
                     val lastPosition = layoutManager.findLastVisibleItemPosition()
                     if(lastPosition == recyclerAdapter.itemCount.minus(1)){
                         Log.d(TAG, "BlogFragment try to load next page...")
+                        viewModel.nextPage()
                     }
                 }
             })
             adapter = recyclerAdapter
         }
-
     }
 
     override fun onItemSelected(position: Int, item: BlogPost) {

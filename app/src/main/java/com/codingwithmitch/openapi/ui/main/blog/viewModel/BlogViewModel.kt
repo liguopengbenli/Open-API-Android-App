@@ -8,6 +8,7 @@ import com.codingwithmitch.openapi.repository.main.BlogRepository
 import com.codingwithmitch.openapi.session.SessionManager
 import com.codingwithmitch.openapi.ui.BaseViewModel
 import com.codingwithmitch.openapi.ui.DataState
+import com.codingwithmitch.openapi.ui.Loading
 import com.codingwithmitch.openapi.ui.main.blog.state.BlogStateEvent
 import com.codingwithmitch.openapi.ui.main.blog.state.BlogStateEvent.*
 import com.codingwithmitch.openapi.ui.main.blog.state.BlogViewState
@@ -29,7 +30,8 @@ constructor(
                 return sessionManager.cachedToken.value?.let { authToken ->
                     blogRepository.searchBlogPosts(
                         authToken,
-                        viewState.value!!.blogFields.searchQuery
+                        getSearchQuery(),
+                        getPage()
                     )
                 }?: AbsentLiveData.create()
             }
@@ -39,7 +41,16 @@ constructor(
             }
 
             is None->{
-                return AbsentLiveData.create()
+                return object : LiveData<DataState<BlogViewState>>(){
+                    override fun onActive() {
+                        super.onActive()
+                        value = DataState(
+                            null,
+                            Loading(false),
+                            null
+                        )
+                    }
+                }
             }
         }
     }
