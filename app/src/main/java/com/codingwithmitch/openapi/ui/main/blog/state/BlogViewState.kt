@@ -2,6 +2,8 @@ package com.codingwithmitch.openapi.ui.main.blog.state
 
 import android.app.DownloadManager
 import com.codingwithmitch.openapi.model.BlogPost
+import com.codingwithmitch.openapi.persistence.BlogQueryUtils.Companion.BLOG_ORDER_ASC
+import com.codingwithmitch.openapi.persistence.BlogQueryUtils.Companion.ORDER_BY_ASC_DATE_UPDATED
 
 data class BlogViewState(
     //BLogFragment vars
@@ -17,7 +19,9 @@ data class BlogViewState(
         var searchQuery: String = "",
         var page: Int = 1,
         var isQueryInProgress: Boolean = false,
-        var isQueryExhausted: Boolean = false
+        var isQueryExhausted: Boolean = false,
+        var filter: String = ORDER_BY_ASC_DATE_UPDATED, //date_update
+        var order: String = BLOG_ORDER_ASC //""
     )
 
     data class ViewBlogFields(
