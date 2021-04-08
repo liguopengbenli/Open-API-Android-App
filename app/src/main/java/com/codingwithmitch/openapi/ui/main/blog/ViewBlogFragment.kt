@@ -6,11 +6,16 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.codingwithmitch.openapi.R
 import com.codingwithmitch.openapi.model.BlogPost
+import com.codingwithmitch.openapi.ui.AreYouSureCallback
 import com.codingwithmitch.openapi.ui.DataState
+import com.codingwithmitch.openapi.ui.UIMessage
+import com.codingwithmitch.openapi.ui.UiMessageType
 import com.codingwithmitch.openapi.ui.main.blog.state.BlogStateEvent
 import com.codingwithmitch.openapi.ui.main.blog.viewModel.isAuthorOfBlogPost
+import com.codingwithmitch.openapi.ui.main.blog.viewModel.removeDeletedBlogPost
 import com.codingwithmitch.openapi.ui.main.blog.viewModel.setIsAuthorOfBlogPost
 import com.codingwithmitch.openapi.util.DateUtils
+import com.codingwithmitch.openapi.util.SuccessHandling.Companion.SUCCESS_BLOG_DELETED
 import kotlinx.android.synthetic.main.fragment_view_blog.*
 
 class ViewBlogFragment : BaseBlogFragment(){
@@ -30,8 +35,27 @@ class ViewBlogFragment : BaseBlogFragment(){
         checkIsAuthorOfBlogPost()
         stateChangeListener.expandAppbar()
         delete_button.setOnClickListener {
-            deleteBlogPost()
+            confirmDeleteRequest()
         }
+    }
+
+    private fun confirmDeleteRequest(){
+        val callBack: AreYouSureCallback = object : AreYouSureCallback{
+            override fun proceed() {
+                deleteBlogPost()
+            }
+
+            override fun cancel() {
+             // ignore
+            }
+        }
+
+        uiCommunicationListener.onUIMessageReived(
+            UIMessage(
+                getString(R.string.are_you_sure_delete),
+                UiMessageType.AreYouSureDialog(callBack)
+            )
+        )
     }
 
     private fun deleteBlogPost(){
@@ -51,8 +75,13 @@ class ViewBlogFragment : BaseBlogFragment(){
             dataState.data?.let { data ->
                 data.data?.getContentIfNotHandled()?.let { viewSate->
                     viewSate.viewBlogFields.isAuthorOfBlogPost
+                } 
+                data.response?.peekContent()?.let { response ->  
+                    if(response.message.equals(SUCCESS_BLOG_DELETED)){
+                        viewModel.removeDeletedBlogPost()
+                        findNavController().popBackStack()
+                    }
                 }
-
             }
         })
 
