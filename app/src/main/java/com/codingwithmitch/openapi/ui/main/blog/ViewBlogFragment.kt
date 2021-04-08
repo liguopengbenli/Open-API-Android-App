@@ -1,7 +1,9 @@
 package com.codingwithmitch.openapi.ui.main.blog
 
 import android.os.Bundle
+import android.util.Log
 import android.view.*
+import androidx.core.net.toUri
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.codingwithmitch.openapi.R
@@ -11,12 +13,11 @@ import com.codingwithmitch.openapi.ui.DataState
 import com.codingwithmitch.openapi.ui.UIMessage
 import com.codingwithmitch.openapi.ui.UiMessageType
 import com.codingwithmitch.openapi.ui.main.blog.state.BlogStateEvent
-import com.codingwithmitch.openapi.ui.main.blog.viewModel.isAuthorOfBlogPost
-import com.codingwithmitch.openapi.ui.main.blog.viewModel.removeDeletedBlogPost
-import com.codingwithmitch.openapi.ui.main.blog.viewModel.setIsAuthorOfBlogPost
+import com.codingwithmitch.openapi.ui.main.blog.viewModel.*
 import com.codingwithmitch.openapi.util.DateUtils
 import com.codingwithmitch.openapi.util.SuccessHandling.Companion.SUCCESS_BLOG_DELETED
 import kotlinx.android.synthetic.main.fragment_view_blog.*
+import java.lang.Exception
 
 class ViewBlogFragment : BaseBlogFragment(){
 
@@ -132,7 +133,16 @@ class ViewBlogFragment : BaseBlogFragment(){
     }
 
     fun navUpdateBlogFragment(){
-        findNavController().navigate(R.id.action_viewBlogFragment_to_updateBlogFragment)
+        try {
+            viewModel.setUpdatedBlogFields(
+                viewModel.getBlogPost().title,
+                viewModel.getBlogPost().body,
+                viewModel.getBlogPost().image.toUri()
+            )
+            findNavController().navigate(R.id.action_viewBlogFragment_to_updateBlogFragment)
+        }catch (e: Exception){
+            Log.e(TAG, "Exception : ${e.message}")
+        }
     }
 
 }

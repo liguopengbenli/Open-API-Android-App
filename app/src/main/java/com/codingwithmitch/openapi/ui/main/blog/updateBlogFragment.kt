@@ -1,10 +1,13 @@
 package com.codingwithmitch.openapi.ui.main.blog
 
+import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import androidx.lifecycle.Observer
 import com.codingwithmitch.openapi.R
+import com.codingwithmitch.openapi.ui.main.blog.state.BlogStateEvent
+import kotlinx.android.synthetic.main.fragment_view_blog.*
+import okhttp3.MultipartBody
 
 class UpdateBlogFragment : BaseBlogFragment(){
 
@@ -19,5 +22,68 @@ class UpdateBlogFragment : BaseBlogFragment(){
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setHasOptionsMenu(true)
+        subscribeObservers()
     }
+
+    private fun subscribeObservers(){
+        viewModel.dataState.observe(viewLifecycleOwner, Observer { dataState->
+
+            stateChangeListener.onDataStateChange(dataState)
+
+            dataState.data?.let { data ->
+                data.data?.getContentIfNotHandled()?.let { viewState->
+                    viewState.viewBlogFields.blogPost?.let {blogPost ->
+                        // TODO("onBLogPostUPdate success")
+                    }
+                }
+            }
+
+            viewModel.viewState.observe(viewLifecycleOwner, Observer {viewState->
+                viewState.updateBlogFields.let { updateBlogFields ->
+                    setBlogProperties(
+                        updateBlogFields.updatedBlogTitle,
+                        updateBlogFields.updatedBlogBody,
+                        updateBlogFields.updatedImageUri
+                    )
+                }
+
+            })
+        })
+    }
+
+    private fun setBlogProperties(updatedBlogTitle: String?, updatedBlogBody: String?, updatedImageUri: Uri?) {
+        requestManager
+            .load(updatedImageUri)
+            .into(blog_image)
+        blog_title.setText(updatedBlogTitle)
+        blog_body.setText(updatedBlogBody)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.update_menu, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
+            R.id.save ->{
+                saveChanges()
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun saveChanges() {
+        var multipartBody: MultipartBody.Part? = null
+        viewModel.setStateEvent(
+            BlogStateEvent.UpdateBlogPostEvent(
+                blog_title.text.toString(),
+                blog_body.text.toString(),
+                multipartBody
+            )
+        )
+    }
+
+
 }

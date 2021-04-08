@@ -1,6 +1,7 @@
 package com.codingwithmitch.openapi.ui.main.blog.state
 
 import android.app.DownloadManager
+import android.net.Uri
 import com.codingwithmitch.openapi.model.BlogPost
 import com.codingwithmitch.openapi.persistence.BlogQueryUtils.Companion.BLOG_ORDER_ASC
 import com.codingwithmitch.openapi.persistence.BlogQueryUtils.Companion.ORDER_BY_ASC_DATE_UPDATED
@@ -10,9 +11,10 @@ data class BlogViewState(
     var blogFields: BlogFields = BlogFields(),
 
     //viewBlogFragment vars
-    var viewBlogFields: ViewBlogFields = ViewBlogFields()
+    var viewBlogFields: ViewBlogFields = ViewBlogFields(),
 
     //UpdateBlogFragment vars
+    var updateBlogFields: UpdateBlogFields = UpdateBlogFields()
 ){
     data class BlogFields(
         var blogList: List<BlogPost> = ArrayList<BlogPost>(),
@@ -29,6 +31,11 @@ data class BlogViewState(
         var isAuthorOfBlogPost: Boolean = false
     )
 
+    data class UpdateBlogFields(
+        var updatedBlogTitle: String? = null,
+        var updatedBlogBody: String? = null,
+        var updatedImageUri: Uri? = null
+    )
 
 
 
