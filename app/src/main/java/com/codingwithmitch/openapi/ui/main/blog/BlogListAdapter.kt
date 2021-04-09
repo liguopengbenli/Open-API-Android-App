@@ -143,8 +143,6 @@ class BlogListAdapter(
                 .load(blogPost.image)
                 .preload()
         }
-
-
     }
 
     class BlogViewHolder
