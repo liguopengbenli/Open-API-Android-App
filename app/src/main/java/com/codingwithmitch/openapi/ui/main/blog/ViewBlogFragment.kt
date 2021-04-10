@@ -35,9 +35,11 @@ class ViewBlogFragment : BaseBlogFragment(){
         subscribeObservers()
         checkIsAuthorOfBlogPost()
         stateChangeListener.expandAppbar()
+
         delete_button.setOnClickListener {
             confirmDeleteRequest()
         }
+        Log.d(TAG," ViewBlogFragment onViewCreated")
     }
 
     private fun confirmDeleteRequest(){
@@ -74,9 +76,11 @@ class ViewBlogFragment : BaseBlogFragment(){
         viewModel.dataState.observe(viewLifecycleOwner, Observer { dataState->
             stateChangeListener.onDataStateChange(dataState)
             dataState.data?.let { data ->
-                data.data?.getContentIfNotHandled()?.let { viewSate->
-                    viewSate.viewBlogFields.isAuthorOfBlogPost
-                } 
+                data.data?.getContentIfNotHandled()?.let { viewState->
+                    viewModel.setIsAuthorOfBlogPost(
+                        viewState.viewBlogFields.isAuthorOfBlogPost
+                    )
+                }
                 data.response?.peekContent()?.let { response ->  
                     if(response.message.equals(SUCCESS_BLOG_DELETED)){
                         viewModel.removeDeletedBlogPost()
@@ -116,7 +120,10 @@ class ViewBlogFragment : BaseBlogFragment(){
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         if(viewModel.isAuthorOfBlogPost()){
+            Log.d(TAG,"onCreateOptionsMenu is author")
             inflater.inflate(R.menu.edit_view_menu, menu)
+        }else{
+            Log.d(TAG,"onCreateOptionsMenu is not author")
         }
     }
 

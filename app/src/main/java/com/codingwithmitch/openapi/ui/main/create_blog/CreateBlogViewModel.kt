@@ -11,7 +11,9 @@ import com.codingwithmitch.openapi.ui.main.create_blog.state.CreateBlogStateEven
 import com.codingwithmitch.openapi.ui.main.create_blog.state.CreateBlogStateEvent.*
 import com.codingwithmitch.openapi.ui.main.create_blog.state.CreateBlogViewState
 import com.codingwithmitch.openapi.util.AbsentLiveData
+import okhttp3.MediaType
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import javax.inject.Inject
 
 class CreateBlogViewModel
@@ -24,7 +26,23 @@ constructor(
     override fun handleStateEvent(stateEvent: CreateBlogStateEvent): LiveData<DataState<CreateBlogViewState>> {
         when(stateEvent){
             is CreateNewBlogEvent-> {
-                return AbsentLiveData.create()
+                return sessionManager.cachedToken.value?.let { authToken ->
+                    val title = RequestBody.create(
+                        MediaType.parse("text/plain"),
+                        stateEvent.title
+                    )
+                    val body = RequestBody.create(
+                        MediaType.parse("text/plain"),
+                        stateEvent.body
+                    )
+                    createBlogRepository.createNewBlogPost(
+                        authToken,
+                        title,
+                        body,
+                        stateEvent.image
+                    )
+                }?: AbsentLiveData.create()
+
             }
 
             is None ->{
@@ -53,6 +71,14 @@ constructor(
         setViewState(update)
     }
 
+    fun getNewImageUri(): Uri?{
+        getCurrentViewStateOrNew().let {
+            it.blogFields.let {
+                return it.newImageUri
+            }
+        }
+    }
+
     fun cancelActiveJobs(){
         createBlogRepository.cancelActiveJobs()
         handlePendingData()
@@ -66,5 +92,7 @@ constructor(
         super.onCleared()
         cancelActiveJobs()
     }
+
+
 
 }

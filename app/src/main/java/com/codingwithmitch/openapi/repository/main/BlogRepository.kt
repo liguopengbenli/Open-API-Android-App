@@ -19,6 +19,7 @@ import com.codingwithmitch.openapi.ui.DataState
 import com.codingwithmitch.openapi.ui.Response
 import com.codingwithmitch.openapi.ui.ResponseType
 import com.codingwithmitch.openapi.ui.main.blog.state.BlogViewState
+import com.codingwithmitch.openapi.ui.main.blog.state.BlogViewState.*
 import com.codingwithmitch.openapi.util.AbsentLiveData
 import com.codingwithmitch.openapi.util.Constants.Companion.PAGINATION_PAGE_SIZE
 import com.codingwithmitch.openapi.util.DateUtils
@@ -113,7 +114,7 @@ constructor(
                             override fun onActive() {
                                 super.onActive()
                                 value = BlogViewState(
-                                    BlogViewState.BlogFields(
+                                    BlogFields(
                                         blogList = it,
                                         isQueryInProgress = true
                                     )
@@ -130,7 +131,7 @@ constructor(
                             try {
                                 // lauch each insert as a separate job to executed in parallel
                                  launch {
-                                    Log.d(TAG,"updateLocalDb: inserting blog: $blogPost")
+                                    //Log.d(TAG,"updateLocalDb: inserting blog: $blogPost")
                                     blogPostDao.insert(blogPost)
                                 }
                             }catch (e: Exception){
@@ -168,20 +169,33 @@ constructor(
             override suspend fun handleApiSuccessResponse(response: GenericApiResponse.ApiSuccessResponse<GenericResponse>) {
                 withContext(Main){
                     Log.d(TAG, "handleApiSucessResponse: ${response.body.response}")
-                    var isAuthor = false
-                    if(response.body.response.equals(RESPONSE_HAS_PERMISSION_TO_EDIT)){
-                     isAuthor = true
-                    }
-                    onCompleteJob(
-                        DataState.data(
-                            data = BlogViewState(
-                                viewBlogFields = BlogViewState.ViewBlogFields(
-                                    isAuthorOfBlogPost = isAuthor
-                                )
-                            ),
-                            response = null
+                    if(response.body.response.equals(RESPONSE_NO_PERMISSION_TO_EDIT)){
+                        onCompleteJob(
+                            DataState.data(
+                                data = BlogViewState(
+                                    viewBlogFields = ViewBlogFields(
+                                        isAuthorOfBlogPost = false
+                                    )
+                                ),
+                                response = null
+                            )
                         )
-                    )
+                    }
+                    else if(response.body.response.equals(RESPONSE_HAS_PERMISSION_TO_EDIT)){
+                        onCompleteJob(
+                            DataState.data(
+                                data = BlogViewState(
+                                    viewBlogFields = ViewBlogFields(
+                                        isAuthorOfBlogPost = true
+                                    )
+                                ),
+                                response = null
+                            )
+                        )
+                    }
+                    else{
+                        onErrorReturn(ERROR_UNKNOWN, shouldUseDialog = false, shouldUseToast = false)
+                    }
                 }
             }
 
@@ -301,7 +315,7 @@ constructor(
                     onCompleteJob(
                         DataState.data(
                             data = BlogViewState(
-                                viewBlogFields = BlogViewState.ViewBlogFields(
+                                viewBlogFields = ViewBlogFields(
                                     blogPost = updatedBlogPost
                                 )
                             ),

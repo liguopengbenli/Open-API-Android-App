@@ -87,7 +87,7 @@ class BlogFragment :
         })
 
         viewModel.viewState.observe(viewLifecycleOwner, Observer {viewState->
-            Log.d(TAG, "BlogFrament, viewState: ${viewState}")
+            //Log.d(TAG, "BlogFrament, viewState: ${viewState}")
             if(viewState != null){
                 recyclerAdapter.apply {
                     preloadGlideImages(
