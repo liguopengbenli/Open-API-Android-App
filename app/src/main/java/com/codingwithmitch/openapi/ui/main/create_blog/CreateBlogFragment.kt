@@ -55,21 +55,22 @@ class CreateBlogFragment : BaseCreateBlogFragment(){
     }
 
     private fun subscribeObservers(){
-        viewModel.dataState.observe(viewLifecycleOwner, Observer {dataState->
+        viewModel.dataState.observe(viewLifecycleOwner, Observer { dataState ->
             stateChangeListener.onDataStateChange(dataState)
-
-            /*dataState.data?.let { data ->
-                data.response?.let { event ->
-                    event.peekContent().let { response ->
-                        response.message?.let { message->
-                            if(message.equals(SUCCESS_BLOG_CREATED)){
-                                viewModel.clearNewBlogFields()
+            if(dataState!=null){
+                dataState.data?.let { data ->
+                    data.response?.let { event ->
+                        event.peekContent().let { response ->
+                            response.message?.let { message ->
+                                if (message.equals(SUCCESS_BLOG_CREATED)) {
+                                    viewModel.clearNewBlogFields()
+                                }
                             }
                         }
                     }
                 }
+            }
 
-            }*/
         })
 
         viewModel.viewState.observe(viewLifecycleOwner, Observer { viewState->
@@ -196,7 +197,6 @@ class CreateBlogFragment : BaseCreateBlogFragment(){
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.publish_menu, menu)
     }
 
