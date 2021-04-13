@@ -56,8 +56,8 @@ class CreateBlogFragment : BaseCreateBlogFragment(){
 
     private fun subscribeObservers(){
         viewModel.dataState.observe(viewLifecycleOwner, Observer { dataState ->
-            stateChangeListener.onDataStateChange(dataState)
             if(dataState!=null){
+                stateChangeListener.onDataStateChange(dataState)
                 dataState.data?.let { data ->
                     data.response?.let { event ->
                         event.peekContent().let { response ->
@@ -86,7 +86,7 @@ class CreateBlogFragment : BaseCreateBlogFragment(){
 
     private fun setBlogProperties(title: String?, body:String?, image: Uri?){
         image?.let {
-            requestManager.load(image)
+            dependencyProvider.getGlideRequestManager().load(image)
                 .into(blog_image)
         }?: setDefautImage()
 
@@ -95,7 +95,7 @@ class CreateBlogFragment : BaseCreateBlogFragment(){
     }
 
     private fun setDefautImage(){
-        requestManager
+        dependencyProvider.getGlideRequestManager()
             .load(R.drawable.default_image)
             .into(blog_image)
     }

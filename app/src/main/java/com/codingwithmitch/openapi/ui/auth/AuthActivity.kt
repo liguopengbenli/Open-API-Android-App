@@ -84,7 +84,6 @@ class AuthActivity : BaseActivity(), NavController.OnDestinationChangedListener
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             finish()
-
     }
 
     override fun onDestinationChanged(

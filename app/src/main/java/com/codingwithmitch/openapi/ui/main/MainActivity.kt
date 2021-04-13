@@ -10,7 +10,10 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
+import com.bumptech.glide.RequestManager
 import com.codingwithmitch.openapi.R
+import com.codingwithmitch.openapi.model.AUTH_TOKEN_BUNDLE_KEY
+import com.codingwithmitch.openapi.model.AuthToken
 import com.codingwithmitch.openapi.ui.BaseActivity
 import com.codingwithmitch.openapi.ui.auth.AuthActivity
 import com.codingwithmitch.openapi.ui.main.account.BaseAccountFragment
@@ -22,17 +25,29 @@ import com.codingwithmitch.openapi.ui.main.blog.ViewBlogFragment
 import com.codingwithmitch.openapi.ui.main.create_blog.BaseCreateBlogFragment
 import com.codingwithmitch.openapi.util.BottomNavController
 import com.codingwithmitch.openapi.util.setUpNavigation
+import com.codingwithmitch.openapi.viewmodels.ViewModelProviderFactory
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.android.synthetic.main.activity_auth.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.progress_bar
+import javax.inject.Inject
 
 class MainActivity: BaseActivity(),
         BottomNavController.NavGraphProvider,
         BottomNavController.OnNavigationGraphChanged,
-        BottomNavController.OnNavigationReselectedListener
+        BottomNavController.OnNavigationReselectedListener,
+        MainDependencyProvider
 {
+    @Inject
+    lateinit var providerFactory: ViewModelProviderFactory
+
+    @Inject
+    lateinit var requestManager: RequestManager
+
+    override fun getVMProviderFactory(): ViewModelProviderFactory = providerFactory
+
+    override fun getGlideRequestManager(): RequestManager = requestManager
 
     private lateinit var bottomNavigationView: BottomNavigationView
 
@@ -123,6 +138,7 @@ class MainActivity: BaseActivity(),
         }
 
         subscribeObervers()
+        restoreSession(savedInstanceState)
     }
 
     private fun setupActionBar(){
@@ -137,6 +153,19 @@ class MainActivity: BaseActivity(),
             android.R.id.home -> onBackPressed()
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putParcelable(AUTH_TOKEN_BUNDLE_KEY, sessionManager.cachedToken.value)
+        super.onSaveInstanceState(outState)
+    }
+
+    private fun restoreSession(savedInstanceState: Bundle?){
+        savedInstanceState?.let { inState->
+            inState[AUTH_TOKEN_BUNDLE_KEY]?.let { authToken->
+                sessionManager.setValue(authToken as AuthToken)
+            }
+        }
     }
 
     fun subscribeObervers(){
@@ -165,5 +194,7 @@ class MainActivity: BaseActivity(),
     override fun expandAppbar() {
         findViewById<AppBarLayout>(R.id.app_bar).setExpanded(true)
     }
+
+
 
 }

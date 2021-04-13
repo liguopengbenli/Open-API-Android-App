@@ -91,7 +91,7 @@ class BlogFragment :
             if(viewState != null){
                 recyclerAdapter.apply {
                     preloadGlideImages(
-                        requestManager,
+                        dependencyProvider.getGlideRequestManager(),
                         viewState.blogFields.blogList
                     )
 
@@ -155,7 +155,7 @@ class BlogFragment :
 
         // Check for pagination end (no more results)
         // must do this b/c server will return an ApiErrorResponse if page is not valid,
-        // -> meaning there is no more data.
+        // -> meaning there is requestManagerno more data.
         dataState.error?.let{ event ->
             event.peekContent().response.message?.let{
                 if(ErrorHandling.isPaginationDone(it)){
@@ -179,7 +179,7 @@ class BlogFragment :
             addItemDecoration(topSpacingItemDecoration)
 
             recyclerAdapter = BlogListAdapter(
-                requestManager = requestManager,
+                requestManager = dependencyProvider.getGlideRequestManager(),
                 interaction = this@BlogFragment
             )
 
