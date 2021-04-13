@@ -5,12 +5,14 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.NavigationUI
 import com.bumptech.glide.RequestManager
 import com.codingwithmitch.openapi.R
+import com.codingwithmitch.openapi.di.Injectable
 import com.codingwithmitch.openapi.ui.DataStateChangeListener
 import com.codingwithmitch.openapi.ui.UICommunicationListener
 import com.codingwithmitch.openapi.ui.main.blog.viewModel.BlogViewModel
@@ -19,7 +21,7 @@ import dagger.android.support.DaggerFragment
 import java.lang.Exception
 import javax.inject.Inject
 
-abstract class BaseCreateBlogFragment : DaggerFragment(){
+abstract class BaseCreateBlogFragment : Fragment(), Injectable{
 
     val TAG: String = "AppDebug"
 
