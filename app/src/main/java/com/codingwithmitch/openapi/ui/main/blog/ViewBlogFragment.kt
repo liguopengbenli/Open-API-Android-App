@@ -69,7 +69,7 @@ class ViewBlogFragment : BaseBlogFragment(){
 
     private fun checkIsAuthorOfBlogPost(){
         viewModel.setIsAuthorOfBlogPost(false) // reset
-        viewModel.setStateEvent(BlogStateEvent.checkAuthorOfBlogPost())
+        viewModel.setStateEvent(BlogStateEvent.CheckAuthorOfBlogPost())
     }
 
     private fun subscribeObservers(){

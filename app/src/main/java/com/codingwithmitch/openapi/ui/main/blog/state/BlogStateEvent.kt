@@ -5,7 +5,9 @@ import okhttp3.MultipartBody
 sealed class BlogStateEvent{
     class BlogSearchEvent: BlogStateEvent()
 
-    class checkAuthorOfBlogPost: BlogStateEvent()
+    class CheckAuthorOfBlogPost: BlogStateEvent()
+
+    class RestoreBlogListFromCache: BlogStateEvent()
 
     class DeleteBlogPostEvent: BlogStateEvent()
 

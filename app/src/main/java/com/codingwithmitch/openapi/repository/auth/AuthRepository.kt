@@ -135,22 +135,20 @@ class AuthRepository constructor(
             false
         ){
             override suspend fun createCacheRequestAndReturn() {
-                accountPropertiesDao.searchByEmail(previousAuthUserEmail).let {
-                    accountProperties ->
+                accountPropertiesDao.searchByEmail(previousAuthUserEmail).let { accountProperties ->
                     Log.d(TAG, "checkPreviousAuthUser searching for token: $accountProperties")
                     accountProperties?.let {
                         if(accountProperties.pk > -1){
-                            authTokenDao.searchByPk(accountProperties.pk).let {
-                                authToken ->
+                            authTokenDao.searchByPk(accountProperties.pk).let { authToken ->
                                 if(authToken !=null){
-                                    onCompleteJob(
+                                    if(authToken.token != null){
+                                        onCompleteJob(
                                         DataState.data(
-                                            data = AuthViewState(
-                                                authToken = authToken
-                                            )
+                                            data = AuthViewState(authToken = authToken)
                                         )
                                     )
                                     return
+                                    }
                                 }
                             }
                         }

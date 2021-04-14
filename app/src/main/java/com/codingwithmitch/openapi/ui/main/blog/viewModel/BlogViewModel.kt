@@ -1,6 +1,7 @@
 package com.codingwithmitch.openapi.ui.main.blog.viewModel
 
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.lifecycle.LiveData
 import com.bumptech.glide.RequestManager
 import com.codingwithmitch.openapi.model.BlogPost
@@ -48,6 +49,8 @@ constructor(
     override fun handleStateEvent(stateEvent: BlogStateEvent): LiveData<DataState<BlogViewState>> {
         when(stateEvent){
             is BlogSearchEvent->{
+                Log.i(TAG, "lig BlogSearchEvent")
+                clearLayoutMangerState()
                 return sessionManager.cachedToken.value?.let { authToken ->
                     blogRepository.searchBlogPosts(
                         authToken,
@@ -58,7 +61,15 @@ constructor(
                 }?: AbsentLiveData.create()
             }
 
-            is checkAuthorOfBlogPost->{
+            is RestoreBlogListFromCache ->{
+                return blogRepository.restoreBlogListFromCache(
+                    query = getSearchQuery(),
+                    filterAndOrder = getOrder() + getFilter(),
+                    page = getPage()
+                )
+            }
+
+            is CheckAuthorOfBlogPost->{
                 return sessionManager.cachedToken.value?.let { authToken ->
                     blogRepository.isAuthOfBlogPost(
                         authToken = authToken,

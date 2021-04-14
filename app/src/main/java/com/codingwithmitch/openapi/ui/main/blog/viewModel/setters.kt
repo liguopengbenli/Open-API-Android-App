@@ -1,6 +1,7 @@
 package com.codingwithmitch.openapi.ui.main.blog.viewModel
 
 import android.net.Uri
+import android.os.Parcelable
 import com.codingwithmitch.openapi.model.BlogPost
 
 /*
@@ -56,12 +57,24 @@ fun BlogViewModel.setBlogFiter(filter: String?){
 }
 
 
+
 fun BlogViewModel.setBlogOrder(order: String){
    val update = getCurrentViewStateOrNew()
     update.blogFields.order = order
     setViewState(update)
 }
 
+fun BlogViewModel.setLayoutManagerState(layoutManagerState: Parcelable){
+    val update = getCurrentViewStateOrNew()
+    update.blogFields.layoutManagerState = layoutManagerState
+    setViewState(update)
+}
+
+fun BlogViewModel.clearLayoutMangerState(){
+    val update = getCurrentViewStateOrNew()
+    update.blogFields.layoutManagerState = null
+    setViewState(update)
+}
 
 fun BlogViewModel.removeDeletedBlogPost(){
     val update = getCurrentViewStateOrNew()

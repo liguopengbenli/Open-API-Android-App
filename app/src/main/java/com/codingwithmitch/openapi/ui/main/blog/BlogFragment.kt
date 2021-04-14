@@ -66,6 +66,11 @@ class BlogFragment :
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.refreshFromCache()
+    }
+
     private fun onBlogSearchOrFilter(){
         viewModel.loadFirstPage().let {
             resetUI()
@@ -76,6 +81,17 @@ class BlogFragment :
         blog_post_recyclerview.smoothScrollToPosition(0)
         stateChangeListener.hideSoftKeyboard()
         focusable_view.requestFocus()
+    }
+
+    private fun saveLayoutManagerState(){
+        blog_post_recyclerview.layoutManager?.onSaveInstanceState()?.let {lmState->
+            viewModel.setLayoutManagerState(lmState)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        saveLayoutManagerState()
     }
 
     private fun subscribeObserver(){
@@ -94,7 +110,7 @@ class BlogFragment :
                         dependencyProvider.getGlideRequestManager(),
                         viewState.blogFields.blogList
                     )
-
+                    Log.d(TAG,"#list items: ${viewState.blogFields.blogList.size}")
                     submitList(
                         list = viewState.blogFields.blogList,
                         isQueryExhausted = viewState.blogFields.isQueryExhausted
@@ -122,7 +138,7 @@ class BlogFragment :
             if (actionId == EditorInfo.IME_ACTION_UNSPECIFIED
                 || actionId == EditorInfo.IME_ACTION_SEARCH ) {
                 val searchQuery = v.text.toString()
-                Log.e(TAG, "SearchView: (keyboard or arrow) executing search...: ${searchQuery}")
+                Log.e(TAG, "lig SearchView: (keyboard or arrow) executing search...: ${searchQuery}")
                 viewModel.setQuery(searchQuery).let{
                     onBlogSearchOrFilter()
                 }
@@ -133,15 +149,12 @@ class BlogFragment :
         // case2: SEARCH BUTTON CLICKED (in toolbar)
         (searchView.findViewById(R.id.search_go_btn) as View).setOnClickListener {
             val searchQuery = searchPlate.text.toString()
-            Log.e(TAG, "SearchView: (button) executing search...: ${searchQuery}")
+            Log.e(TAG, "lig SearchView: (button) executing search...: ${searchQuery}")
             viewModel.setQuery(searchQuery).let {
                 onBlogSearchOrFilter()
             }
         }
-
-
     }
-
 
     private fun handlePagination(dataState: DataState<BlogViewState>){
         // Handle incoming data from DataState
@@ -214,6 +227,12 @@ class BlogFragment :
         findNavController().navigate(R.id.action_blogFragment_to_viewBlogFragment)
     }
 
+    override fun restoreListPosition() {
+        viewModel.viewState.value?.blogFields?.layoutManagerState?.let {lmState->
+            blog_post_recyclerview?.layoutManager?.onRestoreInstanceState(lmState)
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         // clear reference can leak memory
@@ -227,6 +246,7 @@ class BlogFragment :
     }
 
     override fun onRefresh() {
+        Log.i(TAG,"lig call refresh")
         onBlogSearchOrFilter()
         swipe_refresh.isRefreshing = false
     }
@@ -257,7 +277,7 @@ class BlogFragment :
 
             // listen for new applied filters
             view.findViewById<TextView>(R.id.positive_button).setOnClickListener {
-                Log.d(TAG, "FilterDialog: applying filters. ")
+                Log.d(TAG, "lig FilterDialog: applying filters. ")
 
                 val selectedFilter = dialog.getCustomView().findViewById<RadioButton>(
                     dialog.getCustomView().findViewById<RadioGroup>(R.id.filter_group).checkedRadioButtonId
