@@ -61,7 +61,9 @@ class BlogFragment :
 
         initRecyclerView()
         subscribeObserver()
+
         if (savedInstanceState == null){
+            Log.e(TAG,"lig loadfirstpage")
             viewModel.loadFirstPage()
         }
     }
@@ -85,6 +87,7 @@ class BlogFragment :
 
     private fun saveLayoutManagerState(){
         blog_post_recyclerview.layoutManager?.onSaveInstanceState()?.let {lmState->
+            Log.i(TAG, "lig saveLayoutState")
             viewModel.setLayoutManagerState(lmState)
         }
     }
@@ -110,9 +113,9 @@ class BlogFragment :
                         dependencyProvider.getGlideRequestManager(),
                         viewState.blogFields.blogList
                     )
-                    Log.d(TAG,"#list items: ${viewState.blogFields.blogList.size}")
+                    //Log.d(TAG,"lig list items: ${viewState.blogFields.blogList.size}")
                     submitList(
-                        list = viewState.blogFields.blogList,
+                        blogList = viewState.blogFields.blogList,
                         isQueryExhausted = viewState.blogFields.isQueryExhausted
                     )
 
@@ -138,7 +141,7 @@ class BlogFragment :
             if (actionId == EditorInfo.IME_ACTION_UNSPECIFIED
                 || actionId == EditorInfo.IME_ACTION_SEARCH ) {
                 val searchQuery = v.text.toString()
-                Log.e(TAG, "lig SearchView: (keyboard or arrow) executing search...: ${searchQuery}")
+                Log.i(TAG, "lig SearchView: (keyboard or arrow) executing search...: ${searchQuery}")
                 viewModel.setQuery(searchQuery).let{
                     onBlogSearchOrFilter()
                 }
@@ -185,6 +188,8 @@ class BlogFragment :
     }
 
     private fun initRecyclerView(){
+        Log.d(TAG, "lig initRecyclerView")
+
         blog_post_recyclerview.apply {
             layoutManager = LinearLayoutManager(this@BlogFragment.context)
             val topSpacingItemDecoration = TopSpacingItemDecoration(30)
@@ -202,7 +207,7 @@ class BlogFragment :
                     val layoutManager = recyclerView.layoutManager as LinearLayoutManager
                     val lastPosition = layoutManager.findLastVisibleItemPosition()
                     if(lastPosition == recyclerAdapter.itemCount.minus(1)){
-                        Log.d(TAG, "BlogFragment try to load next page...")
+                        Log.d(TAG, "lig BlogFragment try to load next page...")
                         viewModel.nextPage()
                     }
                 }
@@ -229,6 +234,7 @@ class BlogFragment :
 
     override fun restoreListPosition() {
         viewModel.viewState.value?.blogFields?.layoutManagerState?.let {lmState->
+
             blog_post_recyclerview?.layoutManager?.onRestoreInstanceState(lmState)
         }
     }

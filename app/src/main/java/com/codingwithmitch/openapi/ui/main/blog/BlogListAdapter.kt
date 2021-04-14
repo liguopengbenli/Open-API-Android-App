@@ -126,15 +126,19 @@ class BlogListAdapter(
         return differ.currentList.get(position).pk // -1
     }
 
-    fun submitList(list: List<BlogPost>?, isQueryExhausted: Boolean) {
-        val newList = list?.toMutableList()
-        if(isQueryExhausted){
+    fun submitList(
+        blogList: List<BlogPost>?,
+        isQueryExhausted: Boolean
+    ){
+        val newList = blogList?.toMutableList()
+        if (isQueryExhausted)
             newList?.add(NO_MORE_RESULTS_BLOG_MARKER)
-        }
         val commitCallback = Runnable {
+            // if process died must restore list position
+            // very annoying
             interaction?.restoreListPosition()
         }
-        differ.submitList(list, commitCallback)
+        differ.submitList(newList, commitCallback)
     }
 
     fun preloadGlideImages(
