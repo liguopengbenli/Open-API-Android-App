@@ -22,6 +22,8 @@ fun BlogViewModel.loadFirstPage(){
     setQueryExhausted(false)
     resetPage()
     setStateEvent(BlogSearchEvent())
+    //Log.e(TAG, "lig BlogViewModel: loadFirstPage: ${viewState.value!!.blogFields.searchQuery}")
+
 }
 
 fun BlogViewModel.incrementPageNumber(){
@@ -41,7 +43,7 @@ fun BlogViewModel.nextPage(){
 }
 
 fun BlogViewModel.handleIncomingBlogListData(viewState: BlogViewState){
-    setQueryExhausted(viewState.blogFields.isQueryExhausted)
     setQueryInProgress(viewState.blogFields.isQueryInProgress)
+    setQueryExhausted(viewState.blogFields.isQueryExhausted)
     setBlogListData(viewState.blogFields.blogList)
 }

@@ -23,6 +23,7 @@ import com.codingwithmitch.openapi.ui.main.blog.BaseBlogFragment
 import com.codingwithmitch.openapi.ui.main.blog.UpdateBlogFragment
 import com.codingwithmitch.openapi.ui.main.blog.ViewBlogFragment
 import com.codingwithmitch.openapi.ui.main.create_blog.BaseCreateBlogFragment
+import com.codingwithmitch.openapi.util.BOTTOM_NAV_BACKSTACK_KEY
 import com.codingwithmitch.openapi.util.BottomNavController
 import com.codingwithmitch.openapi.util.setUpNavigation
 import com.codingwithmitch.openapi.viewmodels.ViewModelProviderFactory
@@ -130,6 +131,7 @@ class MainActivity: BaseActivity(),
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setupActionBar()
+        setupBottomNavigationView(savedInstanceState)
 
         bottomNavigationView = findViewById(R.id.bottom_navigation_view)
         bottomNavigationView.setUpNavigation(bottomNavController, this)
@@ -155,8 +157,24 @@ class MainActivity: BaseActivity(),
         return super.onOptionsItemSelected(item)
     }
 
+    private fun setupBottomNavigationView(savedInstanceState: Bundle?){
+        bottomNavigationView = findViewById(R.id.bottom_navigation_view)
+        bottomNavigationView.setUpNavigation(bottomNavController, this)
+        if (savedInstanceState == null) {
+            bottomNavController.setupBottomNavigationBackStack(null)
+            bottomNavController.onNavigationItemSelected()
+        }else{
+            (savedInstanceState[BOTTOM_NAV_BACKSTACK_KEY] as IntArray?)?.let {items->
+                val backStack = BottomNavController.BackStack()
+                backStack.addAll(items.toTypedArray())
+                bottomNavController.setupBottomNavigationBackStack(backStack)
+            }
+        }
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putParcelable(AUTH_TOKEN_BUNDLE_KEY, sessionManager.cachedToken.value)
+        outState.putIntArray(BOTTOM_NAV_BACKSTACK_KEY, bottomNavController.navigationBackStack.toIntArray())
         super.onSaveInstanceState(outState)
     }
 

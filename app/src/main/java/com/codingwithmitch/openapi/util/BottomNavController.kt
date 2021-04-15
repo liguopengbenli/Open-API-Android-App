@@ -2,6 +2,7 @@ package com.codingwithmitch.openapi.util
 
 import android.app.Activity
 import android.content.Context
+import android.os.Parcelable
 import androidx.annotation.IdRes
 import androidx.annotation.NavigationRes
 import androidx.fragment.app.Fragment
@@ -13,7 +14,10 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import com.codingwithmitch.openapi.R
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlinx.android.parcel.Parcelize
 
+
+const val BOTTOM_NAV_BACKSTACK_KEY = "com.codingwithmitch.openapi.util.BackStack"
 class BottomNavController(
     val context: Context,
     @IdRes val containerId: Int,
@@ -25,13 +29,19 @@ class BottomNavController(
     lateinit var activity: Activity
     lateinit var fragmentManager: FragmentManager
     lateinit var navItemChangeListener: OnNavigatonItemChanged
-    private val navigationBackStack = BackStack.of(appStartDestinationId)
+    lateinit var navigationBackStack : BackStack
 
     init {
         if(context is Activity){
             activity = context
             fragmentManager = (activity as FragmentActivity).supportFragmentManager
         }
+    }
+
+    fun setupBottomNavigationBackStack(previousBackStack: BackStack?){
+        navigationBackStack = previousBackStack?.let {
+            it
+        }?: BackStack.of(appStartDestinationId)
     }
 
     // programmatically add nav host fragment and handle its backstack
@@ -94,7 +104,8 @@ class BottomNavController(
         }
     }
 
-    private class BackStack: ArrayList<Int>(){
+    @Parcelize
+    class BackStack: ArrayList<Int>(), Parcelable {
         companion object{
             fun of(vararg elements: Int): BackStack{
                 val b = BackStack()
