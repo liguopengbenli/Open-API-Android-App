@@ -24,6 +24,7 @@ import com.codingwithmitch.openapi.ui.main.blog.ViewBlogFragment
 import com.codingwithmitch.openapi.ui.main.create_blog.BaseCreateBlogFragment
 import com.codingwithmitch.openapi.util.BOTTOM_NAV_BACKSTACK_KEY
 import com.codingwithmitch.openapi.util.BottomNavController
+import com.codingwithmitch.openapi.util.BottomNavController.*
 import com.codingwithmitch.openapi.util.setUpNavigation
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -32,8 +33,8 @@ import javax.inject.Inject
 import javax.inject.Named
 
 class MainActivity: BaseActivity(),
-        BottomNavController.OnNavigationGraphChanged,
-        BottomNavController.OnNavigationReselectedListener
+        OnNavigationGraphChanged,
+        OnNavigationReselectedListener
 {
     @Inject
     @Named("AccountFragmentFactory")
@@ -53,8 +54,8 @@ class MainActivity: BaseActivity(),
     private val bottomNavController by lazy(LazyThreadSafetyMode.NONE){
         BottomNavController(
             this,
-            R.id.main_nav_host_fragment,
-            R.id.nav_blog,
+            R.id.main_fragments_container,
+            R.id.menu_nav_blog,
             this
         )
     }
@@ -151,7 +152,7 @@ class MainActivity: BaseActivity(),
             bottomNavController.onNavigationItemSelected()
         }else{
             (savedInstanceState[BOTTOM_NAV_BACKSTACK_KEY] as IntArray?)?.let {items->
-                val backStack = BottomNavController.BackStack()
+                val backStack = BackStack()
                 backStack.addAll(items.toTypedArray())
                 bottomNavController.setupBottomNavigationBackStack(backStack)
             }
@@ -159,16 +160,14 @@ class MainActivity: BaseActivity(),
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
         outState.putParcelable(AUTH_TOKEN_BUNDLE_KEY, sessionManager.cachedToken.value)
         outState.putIntArray(BOTTOM_NAV_BACKSTACK_KEY, bottomNavController.navigationBackStack.toIntArray())
-        super.onSaveInstanceState(outState)
     }
 
     private fun restoreSession(savedInstanceState: Bundle?){
-        savedInstanceState?.let { inState->
-            inState[AUTH_TOKEN_BUNDLE_KEY]?.let { authToken->
-                sessionManager.setValue(authToken as AuthToken)
-            }
+        savedInstanceState?.get(AUTH_TOKEN_BUNDLE_KEY)?.let{ authToken ->
+            sessionManager.setValue(authToken as AuthToken)
         }
     }
 
