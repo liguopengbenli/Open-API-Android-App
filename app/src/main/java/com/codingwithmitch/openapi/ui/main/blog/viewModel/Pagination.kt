@@ -43,6 +43,7 @@ fun BlogViewModel.nextPage(){
 }
 
 fun BlogViewModel.handleIncomingBlogListData(viewState: BlogViewState){
+    //Log.d(TAG, "lig BlogViewModel, DataState: ${viewState}")
     setQueryInProgress(viewState.blogFields.isQueryInProgress)
     setQueryExhausted(viewState.blogFields.isQueryExhausted)
     setBlogListData(viewState.blogFields.blogList)

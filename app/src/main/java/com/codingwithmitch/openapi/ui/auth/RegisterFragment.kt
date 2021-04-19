@@ -6,8 +6,11 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.codingwithmitch.openapi.R
+import com.codingwithmitch.openapi.di.auth.AuthScope
 import com.codingwithmitch.openapi.ui.auth.state.AuthStateEvent
 import com.codingwithmitch.openapi.ui.auth.state.LoginFields
 import com.codingwithmitch.openapi.ui.auth.state.RegistrationFields
@@ -16,22 +19,26 @@ import kotlinx.android.synthetic.main.fragment_login.*
 import kotlinx.android.synthetic.main.fragment_login.input_email
 import kotlinx.android.synthetic.main.fragment_login.input_password
 import kotlinx.android.synthetic.main.fragment_register.*
+import javax.inject.Inject
 
+@AuthScope
+class RegisterFragment
+@Inject
+constructor(
+    private val viewModelFactory: ViewModelProvider.Factory
+) : Fragment(R.layout.fragment_register)
+{
+    val viewModel: AuthViewModel by viewModels {
+        viewModelFactory
+    }
 
-class RegisterFragment : BaseAuthFragment() {
-
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_register, container, false)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel.cancelActiveJobs()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Log.d(TAG, "RegisterFragment: ${viewModel.hashCode()}")
         register_button.setOnClickListener {
             register()
         }

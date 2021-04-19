@@ -8,6 +8,7 @@ import com.codingwithmitch.openapi.api.GenericResponse
 import com.codingwithmitch.openapi.api.main.OpenApiMainService
 import com.codingwithmitch.openapi.api.main.response.BlogCreateUpdateResponse
 import com.codingwithmitch.openapi.api.main.response.BlogListSearchResponse
+import com.codingwithmitch.openapi.di.main.MainScope
 import com.codingwithmitch.openapi.model.AuthToken
 import com.codingwithmitch.openapi.model.BlogPost
 import com.codingwithmitch.openapi.persistence.BlogPostDao
@@ -38,6 +39,7 @@ import okhttp3.RequestBody
 import java.lang.Exception
 import javax.inject.Inject
 
+@MainScope
 class BlogRepository
 @Inject
 constructor(

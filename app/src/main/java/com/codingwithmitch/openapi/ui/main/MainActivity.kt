@@ -1,16 +1,15 @@
 package com.codingwithmitch.openapi.ui.main
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentFactory
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
-import com.bumptech.glide.RequestManager
+import com.codingwithmitch.openapi.BaseApplication
 import com.codingwithmitch.openapi.R
 import com.codingwithmitch.openapi.model.AUTH_TOKEN_BUNDLE_KEY
 import com.codingwithmitch.openapi.model.AuthToken
@@ -26,29 +25,28 @@ import com.codingwithmitch.openapi.ui.main.create_blog.BaseCreateBlogFragment
 import com.codingwithmitch.openapi.util.BOTTOM_NAV_BACKSTACK_KEY
 import com.codingwithmitch.openapi.util.BottomNavController
 import com.codingwithmitch.openapi.util.setUpNavigation
-import com.codingwithmitch.openapi.viewmodels.ViewModelProviderFactory
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import kotlinx.android.synthetic.main.activity_auth.*
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.activity_main.progress_bar
 import javax.inject.Inject
+import javax.inject.Named
 
 class MainActivity: BaseActivity(),
-        BottomNavController.NavGraphProvider,
         BottomNavController.OnNavigationGraphChanged,
-        BottomNavController.OnNavigationReselectedListener,
-        MainDependencyProvider
+        BottomNavController.OnNavigationReselectedListener
 {
     @Inject
-    lateinit var providerFactory: ViewModelProviderFactory
+    @Named("AccountFragmentFactory")
+    lateinit var accountFragmentFactory: FragmentFactory
 
     @Inject
-    lateinit var requestManager: RequestManager
+    @Named("BlogFragmentFactory")
+    lateinit var blogFragmentFactory: FragmentFactory
 
-    override fun getVMProviderFactory(): ViewModelProviderFactory = providerFactory
+    @Inject
+    @Named("CreateBlogFragmentFactory")
+    lateinit var createBlogFragmentFactory: FragmentFactory
 
-    override fun getGlideRequestManager(): RequestManager = requestManager
 
     private lateinit var bottomNavigationView: BottomNavigationView
 
@@ -57,24 +55,8 @@ class MainActivity: BaseActivity(),
             this,
             R.id.main_nav_host_fragment,
             R.id.nav_blog,
-            this,
             this
         )
-    }
-
-    override fun getNavGraphId(itemId: Int) = when(itemId) {
-            R.id.nav_blog ->{
-                R.navigation.nav_blog
-            }
-            R.id.nav_account ->{
-                R.navigation.nav_account
-            }
-            R.id.nav_create_blog ->{
-                R.navigation.nav_create_blog
-            }
-            else ->{
-                R.navigation.nav_blog
-            }
     }
 
     override fun onGraphChange() {
@@ -125,6 +107,10 @@ class MainActivity: BaseActivity(),
         else -> {
             // do nothing
         }
+    }
+
+    override fun inject() {
+        (application as BaseApplication).mainComponent().inject(this)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -199,6 +185,7 @@ class MainActivity: BaseActivity(),
         val intent = Intent(this, AuthActivity::class.java)
         startActivity(intent)
         finish()
+        (application as BaseApplication).releaseMainComponent()
     }
 
     override fun displayProgressBar(bool: Boolean) {

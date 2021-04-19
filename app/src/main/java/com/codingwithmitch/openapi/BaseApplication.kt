@@ -1,28 +1,51 @@
 package com.codingwithmitch.openapi
 
-import android.app.Activity
 import android.app.Application
-import com.codingwithmitch.openapi.di.AppInjector
+import com.codingwithmitch.openapi.di.AppComponent
 import com.codingwithmitch.openapi.di.DaggerAppComponent
-import dagger.android.AndroidInjector
-import dagger.android.DispatchingAndroidInjector
-import dagger.android.HasActivityInjector
-import dagger.android.support.DaggerApplication
-import javax.inject.Inject
-
-class BaseApplication: Application(), HasActivityInjector {
+import com.codingwithmitch.openapi.di.auth.AuthComponent
+import com.codingwithmitch.openapi.di.main.MainComponent
 
 
-   @Inject
-   lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Activity>
+class BaseApplication: Application() {
+
+    lateinit var appComponent: AppComponent
+
+    private var authComponent: AuthComponent? = null
+
+    private var mainComponent: MainComponent? = null
 
     override fun onCreate() {
         super.onCreate()
-        AppInjector.init(this)
+        initAppComponent()
     }
 
-    override fun activityInjector(): AndroidInjector<Activity> {
-        return dispatchingAndroidInjector
+    fun mainComponent(): MainComponent{
+        if(mainComponent == null){
+            mainComponent = appComponent.mainComponent().create()
+        }
+        return mainComponent as MainComponent
+    }
+
+    fun authComponent(): AuthComponent{
+        if(authComponent == null){
+            authComponent = appComponent.authComponent().create()
+        }
+        return authComponent as AuthComponent
+    }
+
+    fun releaseAuthComponent(){
+        authComponent = null
+    }
+
+    fun releaseMainComponent(){
+        mainComponent = null
+    }
+
+    fun initAppComponent(){
+        appComponent = DaggerAppComponent.builder()
+            .application(this)
+            .build()
     }
 
 

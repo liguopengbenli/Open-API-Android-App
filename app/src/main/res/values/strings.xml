@@ -68,6 +68,7 @@
     <string name="text_info">Info</string>
     <string name="delete">Delete</string>
     <string name="no_more_results">No more results...</string>
+    <string name="AuthNavHost">AuthNavHost</string>
 
 </resources>
 

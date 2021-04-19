@@ -13,7 +13,9 @@ import dagger.Provides
 import retrofit2.Retrofit
 
 @Module
-class MainModule {
+object MainModule {
+
+    @JvmStatic
     @MainScope
     @Provides
     fun providesOpenApiMainService(retrofitBuilder: Retrofit.Builder): OpenApiMainService {
@@ -22,6 +24,7 @@ class MainModule {
             .create(OpenApiMainService::class.java)
     }
 
+    @JvmStatic
     @MainScope
     @Provides
     fun provideAccountRepository(
@@ -37,12 +40,14 @@ class MainModule {
         )
     }
 
+    @JvmStatic
     @MainScope
     @Provides
     fun provideBlogPostDao(db: AppDatabase): BlogPostDao{
         return db.getBlogPostDao()
     }
 
+    @JvmStatic
     @MainScope
     @Provides
     fun provideBlogRepository(
@@ -53,6 +58,7 @@ class MainModule {
         return BlogRepository(openApiMainService, blogPostDao, sessionManager)
     }
 
+    @JvmStatic
     @MainScope
     @Provides
     fun provideCreateBlogRepository(

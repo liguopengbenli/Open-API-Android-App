@@ -8,6 +8,7 @@ import androidx.lifecycle.switchMap
 import com.codingwithmitch.openapi.api.auth.OpenApiAuthService
 import com.codingwithmitch.openapi.api.auth.network_responses.LoginResponse
 import com.codingwithmitch.openapi.api.auth.network_responses.RegistrationResponse
+import com.codingwithmitch.openapi.di.auth.AuthScope
 import com.codingwithmitch.openapi.model.AccountProperties
 import com.codingwithmitch.openapi.model.AuthToken
 import com.codingwithmitch.openapi.persistence.AccountPropertiesDao
@@ -32,6 +33,7 @@ import com.codingwithmitch.openapi.util.PreferenceKeys
 import com.codingwithmitch.openapi.util.SuccessHandling.Companion.RESPONSE_CHECK_PREVIOUS_AUTH_USER_DONE
 import kotlinx.coroutines.Job
 
+@AuthScope
 class AuthRepository constructor(
     val authTokenDao: AuthTokenDao,
     val accountPropertiesDao: AccountPropertiesDao,

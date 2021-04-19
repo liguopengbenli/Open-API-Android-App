@@ -13,6 +13,10 @@ import androidx.navigation.NavDestination
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import com.codingwithmitch.openapi.R
+import com.codingwithmitch.openapi.fragments.main.account.AccountNavHostFragment
+import com.codingwithmitch.openapi.fragments.main.blog.BlogNavHostFragment
+import com.codingwithmitch.openapi.fragments.main.create_blog.CreateBlogNavHostFragment
+import com.codingwithmitch.openapi.util.BottomNavController.*
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.android.parcel.Parcelize
 
@@ -22,8 +26,7 @@ class BottomNavController(
     val context: Context,
     @IdRes val containerId: Int,
     @IdRes val appStartDestinationId: Int,
-    val graphChangeListener: OnNavigationGraphChanged?,
-    val navGraphProvider: NavGraphProvider
+    val graphChangeListener: OnNavigationGraphChanged?
 ){
     private val TAG: String = "AppDebug"
     lateinit var activity: Activity
@@ -44,10 +47,9 @@ class BottomNavController(
         }?: BackStack.of(appStartDestinationId)
     }
 
-    // programmatically add nav host fragment and handle its backstack
-    fun onNavigationItemSelected(itemId: Int = navigationBackStack.last()): Boolean{
-        val fragment = fragmentManager.findFragmentByTag(itemId.toString())
-            ?: NavHostFragment.create(navGraphProvider.getNavGraphId(itemId))
+    fun onNavigationItemSelected(menuItemId: Int = navigationBackStack.last()): Boolean{
+        val fragment = fragmentManager.findFragmentByTag(menuItemId.toString())
+            ?: createNavHost(menuItemId)
 
         fragmentManager.beginTransaction()
             .setCustomAnimations(
@@ -56,18 +58,38 @@ class BottomNavController(
                 R.anim.fade_in,
                 R.anim.fade_out
             )
-            .replace(containerId, fragment, itemId.toString())
+            .replace(containerId, fragment, menuItemId.toString())
             .addToBackStack(null)
             .commit()
 
         //Add to backStack
-        navigationBackStack.moveLast(itemId)
+        navigationBackStack.moveLast(menuItemId)
 
-        navItemChangeListener.onItemChanged(itemId)
+        navItemChangeListener.onItemChanged(menuItemId)
 
         graphChangeListener?.onGraphChange()
 
         return true
+    }
+
+    private fun createNavHost(menuItemId: Int): Fragment{
+        return when(menuItemId){
+            R.id.menu_nav_account -> {
+                AccountNavHostFragment.create(R.navigation.nav_account)
+            }
+
+            R.id.menu_nav_blog -> {
+                BlogNavHostFragment.create(R.navigation.nav_blog)
+            }
+
+            R.id.menu_nav_create_blog -> {
+                CreateBlogNavHostFragment.create(R.navigation.nav_create_blog)
+            }
+
+            else -> {
+                BlogNavHostFragment.create(R.navigation.nav_blog)
+            }
+        }
     }
 
 
@@ -126,6 +148,14 @@ class BottomNavController(
         fun onItemChanged(itemId: Int)
     }
 
+    interface OnNavigationGraphChanged{
+        fun onGraphChange()
+    }
+
+    interface OnNavigationReselectedListener{
+        fun onReselectNavItem(navController: NavController, fragment: Fragment)
+    }
+
     fun setOnItemNavigationChanged(listener: (itemId: Int) -> Unit){
         this.navItemChangeListener = object: OnNavigatonItemChanged{
             override fun onItemChanged(itemId: Int) {
@@ -134,24 +164,11 @@ class BottomNavController(
 
         }
     }
-
-    interface NavGraphProvider{
-        @NavigationRes
-        fun getNavGraphId(itemId: Int): Int
-    }
-
-    interface OnNavigationGraphChanged{
-        fun onGraphChange()
-    }
-
-    interface OnNavigationReselectedListener{
-        fun onReselectNavItem(navController: NavController, fragment: Fragment)
-    }
 }
 
 fun BottomNavigationView.setUpNavigation(
     bottomNavController: BottomNavController,
-    onReselectedListener: BottomNavController.OnNavigationReselectedListener
+    onReselectedListener: OnNavigationReselectedListener
 ){
     setOnNavigationItemSelectedListener {
         bottomNavController.onNavigationItemSelected(it.itemId)
@@ -173,7 +190,7 @@ fun BottomNavigationView.setUpNavigation(
 
     bottomNavController.setOnItemNavigationChanged {
         itemId ->
-        menu.findItem(itemId).isChecked = true
+        //menu.findItem(itemId).isChecked = true
     }
 
 }
